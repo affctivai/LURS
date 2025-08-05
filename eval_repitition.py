@@ -9,7 +9,7 @@ def create_ngram(word_list, n):
   return [' '.join([vi for vi in created_ngram]) for created_ngram in created_ngrams]
 
 if len(sys.argv) != 2:
-    print("❌ 사용법: python evaluate.py \"input_dir1 input_dir2\" output_dir")
+    print("python eval_repitition.py results.txt")
     sys.exit(1)
 
 file_path = sys.argv[1]
