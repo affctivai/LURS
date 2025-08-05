@@ -53,7 +53,7 @@ def get_config(case):
         parser.add_argument('-cuda', '--cuda', help='specify cuda device name, e.g. cuda:0, cuda:1, etc', default = 'cuda:0')
         
         parser.add_argument('-train_input', '--train_input', help='add noise' ,required=True)
-        parser.add_argument('-text_encoder', '--text_encoder', help='specify model checkpoint' ,required=True)
+        parser.add_argument('-eeg_encoder', '--eeg_encoder', help='specify model checkpoint' ,required=True)
         parser.add_argument('--save_name', help='save name' ,required=False)
         args = vars(parser.parse_args())
 

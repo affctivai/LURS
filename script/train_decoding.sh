@@ -1,6 +1,6 @@
 python3 pretrain.py \
     --task_name task1_task2_taskNRv2 \
-    --num_epoch 50 \
+    --num_epoch 100 \
     --train_input EEG \
     -lr 0.00002 \
     -b 32 \
@@ -10,10 +10,8 @@ python3 pretrain.py \
 python3 train_diffusion.py --model_name BrainTranslator \
     --task_name task1_task2_taskNRv2 \
     --two_step \
-    --pretrained \
-    --not_load_step1_checkpoint \
-    --num_epoch_step1 50 \
-    --num_epoch_step2 20 \
+    --num_epoch_step1 100 \
+    --num_epoch_step2 50 \
     --train_input EEG \
     -lr1 0.00002 \
     -lr2 0.00002 \

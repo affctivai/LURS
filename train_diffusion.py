@@ -15,7 +15,6 @@ from data import ZuCo_dataset
 from model_decoding import LDMTranslator, pretrainedmodule
 from config import get_config
 from eval_decoding import eval_model
-import wandb
 from ldm.autoencoder import AutoencoderKL
 from ldm.openaimodel import UNetModel
 
@@ -104,10 +103,6 @@ def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25,
                 scheduler.step()
 
             epoch_loss = running_loss / dataset_sizes[phase]
-
-            wandb.log({
-                f'{phase}_loss':epoch_loss,
-            }, step=epoch)
 
             print('{} Loss: {:.4f}'.format(phase, epoch_loss))
             
@@ -365,7 +360,6 @@ if __name__ == '__main__':
         optimizer_step1 = optim.SGD(model.parameters(), lr=step1_lr, momentum=0.9)
         exp_lr_scheduler_step1 = lr_scheduler.StepLR(optimizer_step1, step_size=20, gamma=0.1)
 
-        wandb.init(project= experiment_name, name = 'first_stage'+save_name)
         best_wts, _ = train_model(dataloaders, device, model, optimizer_step1, exp_lr_scheduler_step1, num_epochs=num_epochs_step1, 
                             checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'first_stage')
         # GPU 메모리 정리 코드
@@ -381,7 +375,6 @@ if __name__ == '__main__':
         
         torch.cuda.empty_cache()  # 캐시 비우기        
         torch.cuda.ipc_collect()       # 드라이버에 반환 가능한 블록 정리
-        wandb.finish()
     ######################################################
     '''step two trainig: update whole model for a few iterations'''
     ######################################################
@@ -397,10 +390,9 @@ if __name__ == '__main__':
     print('=== start Step2 training ... ===')
 
     '''main loop'''
-    wandb.init(project=experiment_name, name = 'second_stage'+save_name)
     best_wts, last_model = train_model(dataloaders, device, model, optimizer_step2, exp_lr_scheduler_step2, num_epochs=num_epochs_step2, 
                                        checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'second_stage')
-    wandb.finish()
+    
     best_model = LDMTranslator(pretrained=pretrained_module)
     best_model.load_state_dict(best_wts)
     best_model = best_model.to(device)

@@ -171,7 +171,7 @@ class LDMTranslator(nn.Module):
             negative_prompt_attention_mask = None,
             **kwargs,
     ):
-        z = self.layer.encode(input_embeddings_batch)
+        z, _ = self.layer.encode(input_embeddings_batch)
 
         latent_vector = self.layer.denoising(z) # (B, 56, 512)
 
@@ -198,7 +198,7 @@ class LDMTranslator(nn.Module):
         context: Target Text [32, 56]
         '''
 
-        z = self.layer.encode(input_embeddings_batch)
+        z, _ = self.layer.encode(input_embeddings_batch)
 
  
         latent_vector = self.layer.denoising(z) # (B, 56, 512)
@@ -222,7 +222,7 @@ class LDMTranslator(nn.Module):
         context: Target Text [32, 56]
         '''
 
-        z = self.layer.encode(input_embeddings_batch)
+        z, _ = self.layer.encode(input_embeddings_batch)
 
         latent_vector = self.layer.denoising(z) # (B, 56, 512)
 
