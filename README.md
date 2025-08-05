@@ -6,9 +6,7 @@ This project translates electroencephalography (EEG) signals into natural-langua
 The proposed model, DELTA (Diffusion-based EEG-to-Latent-Text Architecture), decouples EEG signal encoding from text generation by operating in a probabilistic latent space. It incorporates:
 
 * A variational EEG encoder to model uncertainty and variability in brain signals.
-
 * A denoising U-Net trained with latent-space diffusion, enabling semantically guided refinement of EEG representations.
-
 * A pretrained BART decoder for natural and expressive language generation from refined latents.
 
 Unlike previous deterministic models, DELTA supports open-vocabulary decoding and produces more diverse, coherent, and lexically rich outputs. It achieves state-of-the-art performance on the ZuCo dataset, particularly under non-teacher-forcing (Non-TF) conditions that better reflect real-world EEG-to-text applications.
