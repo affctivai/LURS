@@ -10,51 +10,37 @@ import time
 import copy
 from tqdm import tqdm
 from transformers import BartTokenizer, BartForConditionalGeneration
-from data import ZuCo_dataset
-from config import get_config
+from data.data import ZuCo_dataset
+from dataclasses import asdict
+import sys
 # import wandb
-from ldm.autoencoder import AutoencoderKL
-from ldm.openaimodel import UNetModel
-from model_decoding import pretrainedmodule
 
-class EarlyStopping:
-    def __init__(self, patience: int = 10, delta: float = 0.0):
-        """
-        Args:
-            patience (int): 개선이 없다고 판단할 연속 epoch 수
-            delta (float): '개선'으로 간주할 최소 손실 감소 폭
-        """
-        self.patience = patience
-        self.delta = delta
-        self.counter = 0
-        self.best_score = None
-        self.early_stop = False
-
-    def __call__(self, val_loss: float) -> bool:
-        score = -val_loss                       # 손실이 작을수록 좋은 모델
-        if self.best_score is None:
-            self.best_score = score
-            return False
-
-        if score < self.best_score + self.delta:
-            self.counter += 1
-            if self.counter >= self.patience:
-                self.early_stop = True
-        else:
-            self.best_score = score
-            self.counter = 0
-        return self.early_stop
+from module.ldm.autoencoder import AutoencoderKL
+from module.ldm.openaimodel import UNetModel
+from model import *
+from utils import *
+from module.compare_model.EEGNet import EEGNet
+from module.compare_model.DeepConvNet import DeepConvNet
     
+# import os, tempfile
+# TMPDIR = "/home/pymp_tmp"
+# os.environ["TMPDIR"] = TMPDIR
+# os.environ["TEMP"] = TMPDIR
+# os.environ["TMP"] = TMPDIR
+# tempfile.tempdir = TMPDIR
+
 def train(dataloaders, device, model, optimizer, scheduler, num_epochs=25, checkpoint_path_best = './checkpoints/decoding/best/temp_decoding.pt', checkpoint_path_last = './checkpoints/decoding/last/temp_decoding.pt'):
     # modified from: https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
     since = time.time()
     best_model_wts = copy.deepcopy(model.state_dict())
     best_loss = 100000000000
-    early_stopper = EarlyStopping(patience=15) 
+    early_stopper = EarlyStopping(patience=20) 
 
     for epoch in range(1, num_epochs+1):
         print('Epoch {}/{}'.format(epoch, num_epochs))
         print('-' * 10)
+        print('Epoch {}/{}'.format(epoch, num_epochs), file=sys.stderr)
+        print('-' * 10, file=sys.stderr)
         # Each epoch has a training and validation phase
         for phase in ['train', 'dev']:
             if phase == 'train':
@@ -66,10 +52,12 @@ def train(dataloaders, device, model, optimizer, scheduler, num_epochs=25, check
 
             
             # Iterate over data.
-            for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, rawEEG in tqdm(dataloaders[phase]):
+            # for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sent_level_EEG, rawEEG in tqdm(dataloaders[phase]):
+            for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sentiment_label, sent_level_EEG in tqdm(dataloaders[phase], file=sys.stderr):
                 
                 # load in batch
                 input_embeddings_batch = input_embeddings.to(device).float()
+                # input_embeddings_batch = sent_level_EEG.unsqueeze(1).to(device).float()
                 input_masks_batch = input_masks.to(device)
                 input_mask_invert_batch = input_mask_invert.to(device)
                 target_ids_batch = target_ids.to(device)
@@ -113,11 +101,13 @@ def train(dataloaders, device, model, optimizer, scheduler, num_epochs=25, check
                     print(f'update best on dev checkpoint: {checkpoint_path_best}')
                 # ④ Early Stopping 조건 확인
                 if early_stopper(epoch_loss):
-                    print(f'\nEarly stopping triggered (patience={10}) at epoch {epoch}')
+                    print(f'\nEarly stopping triggered (patience={20}) at epoch {epoch}')
+                    torch.save(model.state_dict(), checkpoint_path_last)
                     model.load_state_dict(best_model_wts)   # 최적 가중치 복원
+                    torch.save(model.state_dict(), checkpoint_path_best)
+
                     time_elapsed = time.time() - since
                     print(f'Training stopped in {time_elapsed//60:.0f}m {time_elapsed%60:.0f}s')
-                    torch.save(model.state_dict(), checkpoint_path_last)
                     print(f'update last checkpoint: {checkpoint_path_last}')
                     return model
         print()
@@ -127,31 +117,33 @@ def train(dataloaders, device, model, optimizer, scheduler, num_epochs=25, check
     print('Best val loss: {:4f}'.format(best_loss))
 
     # load best model weights
-    model.load_state_dict(best_model_wts)
     torch.save(model.state_dict(), checkpoint_path_last)
+    model.load_state_dict(best_model_wts)
+    torch.save(model.state_dict(), checkpoint_path_best)
     print(f'update last checkpoint: {checkpoint_path_last}')
     return model
-
-
-def show_require_grad_layers(model):
-    print()
-    print(' require_grad layers:')
-    # sanity check
-    for name, param in model.named_parameters():
-        if param.requires_grad:
-            print(' ', name)
 
 
 if __name__ == '__main__':
     args = get_config('pretrain_autoencoder')
 
     ''' config param'''
-    dataset_setting = 'unique_sent'
+
+    is_con = args['is_con']
+    is_geo = args['is_geo']
+    is_kl = args['is_kl']
+
+    noise_scheduler = args['noise_scheduler']
+    time_step = args['time_step']
     
     num_epoch = args['num_epoch']
     lr = args['learning_rate']
     
     batch_size = args['batch_size']
+    model_name = args['model_name'] # DELTA, w/o_diffusion, DConv, EEGNet ...
+    models = ['pretrain', 'wo_diffusion_pretrain', 'DConv_pretrain', 'EEGNet_pretrain']
+    if model_name not in models:
+        raise ValueError(f'model_name should be chosen from {models}')
     
     # task_name = 'task1'
     # task_name = 'task1_task2'
@@ -159,14 +151,22 @@ if __name__ == '__main__':
     # task_name = 'task1_task2_taskNRv2'
     task_name = args['task_name']
     save_path = args['save_path']
-    train_input = args['train_input']
-    print("train_input is:", train_input)   
+    # train_input = args['train_input'] # word-level or rawEEG
+    # print("train_input is:", train_input)   
     
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    experiment_name = args['save_name']
-    save_name = f'pretrained_module_{experiment_name}_{task_name}_{batch_size}_{num_epoch}_{lr}'
+    experiment_name = f"{noise_scheduler}_{time_step}_{model_name}" if args['save_name'] is None else args['save_name']
+
+    save_name = f"{args['dataset_setting']}_{experiment_name}-module"
+ 
+    if args['is_con']:
+        save_name = 'con_' + save_name
+    if args['is_geo']:
+        save_name = 'geo_' + save_name
+    if args['is_kl']:
+        save_name = 'kl_' + save_name
 
     save_path_best = os.path.join(save_path, 'best')
     if not os.path.exists(save_path_best):
@@ -181,8 +181,8 @@ if __name__ == '__main__':
     output_checkpoint_name_last = os.path.join(save_path_last, f'{save_name}.pt')
 
     # subject_choice = 'ALL
-    subject_choice = args['subjects']
-    print(f'![Debug]using {subject_choice}')
+    # subject_choice = args['subjects']
+    # print(f'![Debug]using {subject_choice}')
     # eeg_type_choice = 'GD
     eeg_type_choice = args['eeg_type']
     print(f'[INFO]eeg type {eeg_type_choice}')
@@ -195,13 +195,8 @@ if __name__ == '__main__':
     
     ''' set random seeds '''
     # https://pytorch.org/docs/stable/notes/randomness.html
-    seed_val = 312
-
-    np.random.seed(seed_val)
-    torch.manual_seed(seed_val)
-    torch.cuda.manual_seed_all(seed_val)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+    seed_val = args['seed']
+    set_seed(seed_val)
 
     ''' set up device '''
     # use cuda
@@ -218,42 +213,42 @@ if __name__ == '__main__':
     ''' set up dataloader '''
     whole_dataset_dicts = []
     if 'task1' in task_name:
-        dataset_path_task1 = '[path]/task1-SR-dataset.pickle'
+        dataset_path_task1 = './dataset/ZuCo/task1-SR/pickle/task1-SR-dataset.pickle'
         with open(dataset_path_task1, 'rb') as handle:
             whole_dataset_dicts.append(pickle.load(handle))
     if 'task2' in task_name:
-        dataset_path_task2 = '[path]/task2-NR-dataset.pickle'
+        dataset_path_task2 = './dataset/ZuCo/task2-NR/pickle/task2-NR-dataset.pickle'
         with open(dataset_path_task2, 'rb') as handle:
             whole_dataset_dicts.append(pickle.load(handle))
     if 'task3' in task_name:
-        dataset_path_task3 = '[path]/task3-TSR-dataset.pickle'
+        dataset_path_task3 = './dataset/ZuCo/task3-TSR/pickle/task3-TSR-dataset.pickle'
         with open(dataset_path_task3, 'rb') as handle:
             whole_dataset_dicts.append(pickle.load(handle))
     if 'taskNRv2' in task_name:
-        dataset_path_taskNRv2 = '[path]/task2-NR-2.0-dataset.pickle'
+        dataset_path_taskNRv2 = './dataset/ZuCo/task2-NR-2.0/pickle/task2-NR-2.0-dataset.pickle'
         with open(dataset_path_taskNRv2, 'rb') as handle:
             whole_dataset_dicts.append(pickle.load(handle))
 
     print()
 
-    """save config"""
-    cfg_dir = './config/decoding/'
-
-    if not os.path.exists(cfg_dir):
-        os.makedirs(cfg_dir)
-
-    with open(os.path.join(cfg_dir,f'{save_name}.json'), 'w') as out_config:
-        json.dump(args, out_config, indent = 4)
 
     
     tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
 
-    # train dataset
-    train_set = ZuCo_dataset(whole_dataset_dicts, 'train', tokenizer, subject = subject_choice, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting, test_input=train_input)
+
+    dataset_setting = args['dataset_setting']
+
+    # train_set = ZuCo_dataset(whole_dataset_dicts, 'train', tokenizer, subject = subject_choice, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting, test_input=train_input)
+    # # dev dataset
+    # dev_set = ZuCo_dataset(whole_dataset_dicts, 'dev', tokenizer, subject = subject_choice, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting, test_input=train_input)
+    # # test dataset
+    # test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, subject = subject_choice, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting, test_input=train_input)
+    
+    train_set = ZuCo_dataset(whole_dataset_dicts, 'train', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
     # dev dataset
-    dev_set = ZuCo_dataset(whole_dataset_dicts, 'dev', tokenizer, subject = subject_choice, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting, test_input=train_input)
+    dev_set = ZuCo_dataset(whole_dataset_dicts, 'dev', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
     # test dataset
-    test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, subject = subject_choice, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting, test_input=train_input)
+    test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
 
     
     dataset_sizes = {'train': len(train_set), 'dev': len(dev_set)}
@@ -269,13 +264,72 @@ if __name__ == '__main__':
     # dataloaders
     dataloaders = {'train':train_dataloader, 'dev':val_dataloader, 'test':test_dataloader}
 
-    pretrained = BartForConditionalGeneration.from_pretrained('facebook/bart-large').to(device)
+    # # cpu ram 덜 잡아먹는지 확인
+    # del whole_dataset_dicts
+    # import gc; gc.collect()
+
+    pretrained_LM = BartForConditionalGeneration.from_pretrained('facebook/bart-large').to(device)
 
     vocab_size = tokenizer.vocab_size
-    eeg_encoder = AutoencoderKL(
-        embed_dim=56,
-        monitor="val/rec_loss",
-        ddconfig={
+    
+
+    
+    if model_name == 'EEGNet_pretrain':
+        denoising_module_statte_dict = {'n_classes': 2,
+            'input_shape': (1, 1, 512, 56),
+            'F1': 16,                # 첫 번째 Temporal Conv 필터 수
+            'D': 2,                  # Spatial Conv 깊이 승수
+            'F2': 'auto',            # F1 * D = 32
+            'T1': 32,                # 첫 번째 Temporal Conv 커널 크기 (sequence_length보다 작아야 함)
+            'T2': 16,                # 두 번째 Temporal Conv 커널 크기
+            'P1': 4,                 # 첫 번째 Pooling 크기
+            'P2': 8,                 # 두 번째 Pooling 크기
+            'drop_out': 0.5,         # 드롭아웃 비율
+            'pool_mode': 'mean',     # 풀링 방식
+            'weight_init_method': 'xavier_uniform'}
+        denoising_module = EEGNet(
+            **denoising_module_statte_dict
+        ).to(device)
+        
+    elif model_name == 'DConv_pretrain':
+        denoising_module_statte_dict = {
+            'input_shape': [32, 1, 512, 56], # [Batch, In-channels, Electrodes, Samples]
+            'first_conv_length': 5,
+            # 'block_out_channels': [1024, 256, 128, 256, 512],
+            'block_out_channels': [32, 64, 128, 256, 512],
+            'pool_size': 3,
+            }
+        denoising_module = DeepConvNet(
+            **denoising_module_statte_dict
+        ).to(device)
+    else: 
+        denoising_module_statte_dict = {
+            'image_size': 512,
+            'dims' : 1, 
+            'in_channels': 56, 
+            'out_channels': 56, 
+            'model_channels': 320, 
+            'attention_resolutions': [4, 2, 1], 
+            'num_res_blocks': 2, 
+            'channel_mult': [1, 2, 4, 4],
+            'num_heads': 8, 
+            'use_spatial_transformer': True, 
+            'transformer_depth': 1, 
+            'context_dim': 512, 
+            'use_checkpoint': False, 
+            'legacy': False
+            }
+        denoising_module = UNetModel(
+            **denoising_module_statte_dict
+            ).to(device)
+        
+    vocab_size = tokenizer.vocab_size
+
+
+    autoencoder_state_dict = {
+        'embed_dim': 56,
+        'monitor': "val/rec_loss",
+        'ddconfig': {
             "double_z": True,
             "z_channels": 58, 
             "resolution": 256,
@@ -287,35 +341,52 @@ if __name__ == '__main__':
             "attn_resolutions": [],
             "dropout": 0.0
         },
-        lossconfig={
+        'lossconfig': {
             "target": "torch.nn.Identity"
         },
-        vocab_size = vocab_size,
-        latent_dim=1024,
-        type = 'eeg'
+    }
+    autoencoder = AutoencoderKL(
+        **autoencoder_state_dict
     ).to(device)
     
-    unet = UNetModel(
-        image_size=512,
-        dims = 1, 
-        in_channels=56, 
-        out_channels=56, 
-        model_channels=320, 
-        attention_resolutions=[4, 2, 1], 
-        num_res_blocks=2, 
-        channel_mult=[1, 2, 4, 4], 
-        num_heads=8, 
-        use_spatial_transformer=True, 
-        transformer_depth=1, 
-        context_dim=512, 
-        use_checkpoint=False, 
-        legacy=False
-        ).to(device)
+    # if model_name == 'wo_diffusion_pretrain':
+    #     is_diffusion = [False, False]
+    # elif model_name == 'DConv':
+    #         is_diffusion = [False, True]
+        
+    # else :
+    #     is_diffusion = [True, False]
+    if model_name == 'wo_diffusion_pretrain':
+        is_diffusion = False
+    else :
+        is_diffusion = True
     
-    model = pretrainedmodule(eeg_encoder, unet, pretrained, device).to(device)
-    optimizer = optim.SGD(eeg_encoder.parameters(), lr=lr, momentum=0.9, weight_decay=1e-5)
-    # optimizer = optim.SGD(eeg_encoder.parameters(), lr=lr, momentum=0.9)
+    pretrain_opts = BuildOptions(model_name="pretrain", is_con=is_con, is_geo=is_geo, is_diffusion=is_diffusion,
+                                 is_kl=is_kl, autoencoder=autoencoder, denoising_module=denoising_module, pretrained_LM=pretrained_LM, device = device, noise_scheduler = noise_scheduler, time_step = time_step)
+
+    model = make_model(pretrain_opts).to(device)
+
+
+    optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-5)
+
+    """save config"""
+    cfg_dir = './save_model/config'
+
+    if not os.path.exists(cfg_dir):
+        os.makedirs(cfg_dir)
+    
+    state_dict = {
+        "args":args,
+        "module_state_dict": {"denoising_module": denoising_module_statte_dict, "autoencoder": autoencoder_state_dict},
+        "loss_weights": {'alpha': model.alpha if is_kl else None, 'beta': model.beta if is_con else None, 'theta': model.theta if is_geo else None, 'is_diffusion': is_diffusion},
+    }
+    with open(os.path.join(cfg_dir,f'{save_name}.json'), 'w') as out_config:
+        json.dump(state_dict, out_config, indent = 4)
+
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
 
-
+    ''' training loop '''
+    since = time.time()
     model = train(dataloaders, device, model, optimizer, exp_lr_scheduler, num_epochs=num_epoch, checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last)
+    total_time = time.time() - since
+    print(f'Training complete in {total_time//60:.0f}m {total_time%60:.0f}s')
