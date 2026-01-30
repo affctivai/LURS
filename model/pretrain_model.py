@@ -30,7 +30,9 @@ class pretrainedmodule(Wrapper_pretrain):
 
         self.denoising_module = denoising_module
         if is_diffusion:
+            # self._schedule = register_schedule(beta_schedule = noise_scheduler,timesteps=time_step, device = device)
             self._schedule = register_schedule(beta_schedule = noise_scheduler, device = device)
+            self.time_step = time_step
         self.pretrained_LM = pretrained_LM
 
         self.is_con = is_con
@@ -40,7 +42,6 @@ class pretrainedmodule(Wrapper_pretrain):
         # self.is_DConvNet = is_diffusion[1]
         self.is_diffusion = is_diffusion
         
-        self.time_step = time_step
 
         self.alpha = 0.0
         self.beta = 0.0
@@ -85,7 +86,7 @@ class pretrainedmodule(Wrapper_pretrain):
 
 
         condition = self.text_embedding(context)
-
+        
         if self.is_diffusion:
             device = x.device
             # --- diffusion process ---

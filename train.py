@@ -1,4 +1,3 @@
-
 import wandb
 import os
 import torch
@@ -23,6 +22,9 @@ from module.compare_model.EEGNet import EEGNet
 from module.compare_model.DeepConvNet import DeepConvNet
 import sys
 
+
+from torch.optim.swa_utils import AveragedModel
+
 # import os, tempfile
 # TMPDIR = "/home/pymp_tmp"
 # os.environ["TMPDIR"] = TMPDIR
@@ -40,12 +42,15 @@ def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25,
 
     # contrastive with reg 할 때 15에서 20으로 바꿨음
     early_stopper = EarlyStopping(patience=20) 
-
+    # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+    # ema_model = AveragedModel(
+    #     model,
+    #     avg_fn=lambda avg, param, n: 0.999 * avg + 0.001 * param
+    # )
     for epoch in range(1, num_epochs+1):
         print('Epoch {}/{}'.format(epoch, num_epochs))
         print('-' * 10)
         print('Epoch {}/{}'.format(epoch, num_epochs), file=sys.stderr)
-        print('-' * 10, file=sys.stderr)
         # Each epoch has a training and validation phase
         for phase in ['train', 'dev']:
             if phase == 'train':
@@ -82,6 +87,7 @@ def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25,
                         # with torch.autograd.detect_anomaly():
                         loss_sum.backward()
                         optimizer.step()
+                        # ema_model.update_parameters(model)
 
                 # statistics
                 running_loss += loss_sum.detach().item() * input_embeddings_batch.size()[0] # batch loss
@@ -89,6 +95,7 @@ def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25,
 
             if phase == 'train':
                 scheduler.step()
+                
 
             epoch_loss = running_loss / dataset_sizes[phase]
 
@@ -238,18 +245,22 @@ if __name__ == '__main__':
         dataset_path_task1 = './dataset/ZuCo/task1-SR/pickle/task1-SR-dataset.pickle'
         with open(dataset_path_task1, 'rb') as handle:
             whole_dataset_dicts.append(pickle.load(handle))
+            # zuco_v1.append(pickle.load(handle))
     if 'task2' in task_name:
         dataset_path_task2 = './dataset/ZuCo/task2-NR/pickle/task2-NR-dataset.pickle'
         with open(dataset_path_task2, 'rb') as handle:
             whole_dataset_dicts.append(pickle.load(handle))
+            # zuco_v1.append(pickle.load(handle))
     if 'task3' in task_name:
         dataset_path_task3 = './dataset/ZuCo/task3-TSR/pickle/task3-TSR-dataset.pickle'
         with open(dataset_path_task3, 'rb') as handle:
             whole_dataset_dicts.append(pickle.load(handle))
+            # zuco_v1.append(pickle.load(handle))
     if 'taskNRv2' in task_name:
         dataset_path_taskNRv2 = './dataset/ZuCo/task2-NR-2.0/pickle/task2-NR-2.0-dataset.pickle'
         with open(dataset_path_taskNRv2, 'rb') as handle:
             whole_dataset_dicts.append(pickle.load(handle))
+            # zuco_v2.append(pickle.load(handle))
 
     print()
 
@@ -265,25 +276,7 @@ if __name__ == '__main__':
     # # test dataset
     # test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, subject = subject_choice, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting, test_input=train_input)
     
-    train_set = ZuCo_dataset(whole_dataset_dicts, 'train', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
-    # dev dataset
-    dev_set = ZuCo_dataset(whole_dataset_dicts, 'dev', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
-    # test dataset
-    test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
 
-    
-    dataset_sizes = {'train': len(train_set), 'dev': len(dev_set)}
-    print('[INFO]train_set size: ', len(train_set))
-    print('[INFO]dev_set size: ', len(dev_set))
-    print('[INFO]test_set size: ', len(test_set))
-    
-    # train dataloader
-    train_dataloader = DataLoader(train_set, batch_size = batch_size, shuffle=True, num_workers=4)
-    # dev dataloader
-    val_dataloader = DataLoader(dev_set, batch_size = 1, shuffle=False, num_workers=4)
-    test_dataloader = DataLoader(test_set, batch_size = 1, shuffle=False, num_workers=4)
-    # dataloaders
-    dataloaders = {'train':train_dataloader, 'dev':val_dataloader, 'test':test_dataloader}
     # del whole_dataset_dicts
     # import gc; gc.collect()
 
@@ -394,6 +387,10 @@ if __name__ == '__main__':
             else:
                 param.requires_grad = False
 
+# subjects=( 'ZAB' 'ZDM' 'ZGW' 'ZJM' 'ZJN' 'ZJS' 'ZKB' 'ZKH' 'ZKW' 'ZMG' 'ZPH' )
+    
+
+
     ''' set up optimizer and scheduler'''
     print('=== start Step1 training ... ===')
     optimizer_step1 = optim.SGD(model.parameters(), lr=step1_lr, momentum=0.9)
@@ -406,52 +403,147 @@ if __name__ == '__main__':
         "args":args,
         "module_state_dict": {"denoising_module": denoising_module_state_dict, "autoencoder": autoencoder_state_dict},
         "pretrained_module_loss_weights": {'alpha': pt_module.alpha if pt_module else None, 'beta': pt_module.beta if pt_module else None, 'theta': pt_module.theta if pt_module else None, 'is_diffusion': is_diffusion},
-    }
+    }    
+    if dataset_setting != "unique_sent":
+        subjects=['YDR', 'YFR', 'YFS', 'YAC', 'YDG', 'YHS', 'YMD', 'YLS', 'YRH', 'YRK', 'YSD', 'YRP', 'YSL', 'YTL', 'YAG', 'YAK', 'YIS', 'YMS']
+        for subj in subjects:
 
-    wandb.init(project= wandb_project_name, name = 'first_stage_'+save_name)
-    model = train_model(dataloaders, device, model, optimizer_step1, exp_lr_scheduler_step1, num_epochs=num_epochs_step1, 
-                        checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'first_stage')
-    wandb.finish()
-    first_step_time = time.time() - since
-    print(f'Step 1 Training complete in {first_step_time//60:.0f}m {first_step_time%60:.0f}s')
+            train_set = ZuCo_dataset(whole_dataset_dicts, 'train', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = subj)
+            # dev dataset
+            dev_set = ZuCo_dataset(whole_dataset_dicts, 'dev', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = subj)
+            # test dataset
+            
+            dataset_sizes = {'train': len(train_set), 'dev': len(dev_set)}
+            print('[INFO]train_set size: ', len(train_set))
+            print('[INFO]dev_set size: ', len(dev_set))
+            
+            # train dataloader
+            train_dataloader = DataLoader(train_set, batch_size = batch_size, shuffle=True, num_workers=4)
+            # dev dataloader
+            val_dataloader = DataLoader(dev_set, batch_size = 1, shuffle=False, num_workers=4)
+            # dataloaders
+            dataloaders = {'train':train_dataloader, 'dev':val_dataloader}
 
-    """save config"""
-    cfg_dir = './save_model/config'
 
-    if not os.path.exists(cfg_dir):
-        os.makedirs(cfg_dir)
+            wandb.init(project= wandb_project_name, name = 'first_stage_'+save_name)
+            model = train_model(dataloaders, device, model, optimizer_step1, exp_lr_scheduler_step1, num_epochs=num_epochs_step1, 
+                                checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'first_stage')
+            wandb.finish()
+            first_step_time = time.time() - since
+            print(f'Step 1 Training complete in {first_step_time//60:.0f}m {first_step_time%60:.0f}s')
+
+            """save config"""
+            cfg_dir = './save_model/config'
+
+            if not os.path.exists(cfg_dir):
+                os.makedirs(cfg_dir)
 
 
-    with open(os.path.join(cfg_dir,f'{save_name}.json'), 'w') as out_config:
-        json.dump(state_dict, out_config, indent = 4)
-    ######################################################
-    '''step two trainig: update whole model for a few iterations'''
-    ######################################################
-    for name, param in model.named_parameters():
-        param.requires_grad = True
+            with open(os.path.join(cfg_dir,f'{save_name}.json'), 'w') as out_config:
+                json.dump(state_dict, out_config, indent = 4)
+            ######################################################
+            '''step two trainig: update whole model for a few iterations'''
+            ######################################################
+            for name, param in model.named_parameters():
+                param.requires_grad = True
 
-    ''' set up optimizer and scheduler'''
-    # optimizer_step2 = optim.Adam(model.parameters(), lr=step2_lr)# (B, 56, vocab_size)
-    optimizer_step2 = optim.SGD(model.parameters(), lr=step2_lr, momentum=0.9)
-    exp_lr_scheduler_step2 = lr_scheduler.StepLR(optimizer_step2, step_size=30, gamma=0.1)
+            ''' set up optimizer and scheduler'''
+            # optimizer_step2 = optim.Adam(model.parameters(), lr=step2_lr)# (B, 56, vocab_size)
+            optimizer_step2 = optim.SGD(model.parameters(), lr=step2_lr, momentum=0.9)
+            exp_lr_scheduler_step2 = lr_scheduler.StepLR(optimizer_step2, step_size=30, gamma=0.1)
 
-    print()
-    print('=== start Step2 training ... ===')
-    # print training layers
-    # show_require_grad_layers(model)
-    
-    since = time.time()
-    '''main loop'''
-    wandb.init(project=wandb_project_name, name = 'second_stage_'+save_name)
-    model = train_model(dataloaders, device, model, optimizer_step2, exp_lr_scheduler_step2, num_epochs=num_epochs_step2, 
-                                       checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'second_stage')
-    wandb.finish()
+            print()
+            print('=== start Step2 training ... ===')
+            # print training layers
+            # show_require_grad_layers(model)
+            
+            since = time.time()
+            '''main loop'''
+            wandb.init(project=wandb_project_name, name = 'second_stage_'+save_name)
+            model = train_model(dataloaders, device, model, optimizer_step2, exp_lr_scheduler_step2, num_epochs=num_epochs_step2, 
+                                            checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'second_stage')
+            wandb.finish()
 
-    second_step_time = time.time() - since
-    print(f'Step 2 Training complete in {second_step_time//60:.0f}m {second_step_time%60:.0f}s')
-    
-    if not os.path.exists('./results'):
-        os.makedirs('./results')
-    if not os.path.exists('./score_results'):
-        os.makedirs('./score_results')
-    eval_model(dataloaders, device, tokenizer, model, output_all_results_path = f'./results/best_{save_name}.txt' , score_results=f'./score_results/best_{save_name}.txt')
+            second_step_time = time.time() - since
+            print(f'Step 2 Training complete in {second_step_time//60:.0f}m {second_step_time%60:.0f}s')
+            
+            if not os.path.exists('./results'):
+                os.makedirs('./results')
+            if not os.path.exists('./score_results'):
+                os.makedirs('./score_results')
+
+            test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = subj)
+            print('[INFO]test_set size: ', len(test_set))
+            test_dataloader = DataLoader(test_set, batch_size = 1, shuffle=False, num_workers=4)
+            dataloaders = {'test':test_dataloader}
+            eval_model(dataloaders, device, tokenizer, model, output_all_results_path = f'./results/best_{save_name}-{subj}.txt' , score_results=f'./score_results/best_{save_name}-{subj}.txt')
+
+    else:
+        train_set = ZuCo_dataset(whole_dataset_dicts, 'train', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
+        # dev dataset
+        dev_set = ZuCo_dataset(whole_dataset_dicts, 'dev', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
+        # test dataset
+        test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
+
+        
+        dataset_sizes = {'train': len(train_set), 'dev': len(dev_set)}
+        print('[INFO]train_set size: ', len(train_set))
+        print('[INFO]dev_set size: ', len(dev_set))
+        print('[INFO]test_set size: ', len(test_set))
+        
+        # train dataloader
+        train_dataloader = DataLoader(train_set, batch_size = batch_size, shuffle=True, num_workers=4)
+        # dev dataloader
+        val_dataloader = DataLoader(dev_set, batch_size = 1, shuffle=False, num_workers=4)
+        test_dataloader = DataLoader(test_set, batch_size = 1, shuffle=False, num_workers=4)
+        # dataloaders
+        dataloaders = {'train':train_dataloader, 'dev':val_dataloader, 'test':test_dataloader}
+
+
+        wandb.init(project= wandb_project_name, name = 'first_stage_'+save_name)
+        model = train_model(dataloaders, device, model, optimizer_step1, exp_lr_scheduler_step1, num_epochs=num_epochs_step1, 
+                            checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'first_stage')
+        wandb.finish()
+        first_step_time = time.time() - since
+        print(f'Step 1 Training complete in {first_step_time//60:.0f}m {first_step_time%60:.0f}s')
+
+        """save config"""
+        cfg_dir = './save_model/config'
+
+        if not os.path.exists(cfg_dir):
+            os.makedirs(cfg_dir)
+
+
+        with open(os.path.join(cfg_dir,f'{save_name}.json'), 'w') as out_config:
+            json.dump(state_dict, out_config, indent = 4)
+        ######################################################
+        '''step two trainig: update whole model for a few iterations'''
+        ######################################################
+        for name, param in model.named_parameters():
+            param.requires_grad = True
+
+        ''' set up optimizer and scheduler'''
+        # optimizer_step2 = optim.Adam(model.parameters(), lr=step2_lr)# (B, 56, vocab_size)
+        optimizer_step2 = optim.SGD(model.parameters(), lr=step2_lr, momentum=0.9)
+        exp_lr_scheduler_step2 = lr_scheduler.StepLR(optimizer_step2, step_size=30, gamma=0.1)
+
+        print()
+        print('=== start Step2 training ... ===')
+        # print training layers
+        # show_require_grad_layers(model)
+        
+        since = time.time()
+        '''main loop'''
+        wandb.init(project=wandb_project_name, name = 'second_stage_'+save_name)
+        model = train_model(dataloaders, device, model, optimizer_step2, exp_lr_scheduler_step2, num_epochs=num_epochs_step2, 
+                                        checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'second_stage')
+        wandb.finish()
+
+        second_step_time = time.time() - since
+        print(f'Step 2 Training complete in {second_step_time//60:.0f}m {second_step_time%60:.0f}s')
+        
+        if not os.path.exists('./results'):
+            os.makedirs('./results')
+        if not os.path.exists('./score_results'):
+            os.makedirs('./score_results')
+        eval_model(dataloaders, device, tokenizer, model, output_all_results_path = f'./results/best_{save_name}.txt' , score_results=f'./score_results/best_{save_name}.txt')

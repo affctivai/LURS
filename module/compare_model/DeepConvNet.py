@@ -7,58 +7,8 @@ from .util import *
 from einops import rearrange, repeat    
 from torch import einsum
 from inspect import isfunction
-def exists(val):
-    return val is not None
-
-def default(val, d):
-    if exists(val):
-        return val
-    return d() if isfunction(d) else d
-
-torch.set_printoptions(linewidth=1000)
-class CrossAttention(nn.Module):
-    def __init__(self, query_dim, context_dim=None, heads=8, dim_head=64, dropout=0.,checkpoint=True):
-        super().__init__()
-        inner_dim = dim_head * heads
-        context_dim = default(context_dim, query_dim)
-
-        self.scale = dim_head ** -0.5
-        self.heads = heads
-
-        self.to_q = nn.Linear(query_dim, inner_dim, bias=False)
-        self.to_k = nn.Linear(context_dim, inner_dim, bias=False)
-        self.to_v = nn.Linear(context_dim, inner_dim, bias=False)
-        self.checkpoint = checkpoint
-
-        self.to_out = nn.Sequential(
-            nn.Linear(inner_dim, query_dim),
-            nn.Dropout(dropout)
-        )
-
-    def forward(self, x, context=None, mask=None):
-        h = self.heads
-
-        q = self.to_q(x)
-        context = default(context, x)
-        k = self.to_k(context)
-        v = self.to_v(context)
-
-        q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> (b h) n d', h=h), (q, k, v))
-
-        sim = einsum('b i d, b j d -> b i j', q, k) * self.scale
-
-        if exists(mask):
-            mask = rearrange(mask, 'b ... -> b (...)')
-            max_neg_value = -torch.finfo(sim.dtype).max
-            mask = repeat(mask, 'b j -> (b h) () j', h=h)
-            sim.masked_fill_(~mask, max_neg_value)
-
-        # attention, what we cannot get enough of
-        attn = sim.softmax(dim=-1)
-
-        out = einsum('b i j, b j d -> b i d', attn, v)
-        out = rearrange(out, '(b h) n d -> b n (h d)', h=h)
-        return self.to_out(out)
+from module.ldm.attention import SpatialTransformer
+from module.ldm.attention import CrossAttention
 from einops import repeat
 import math
 class DeepConvNet(nn.Module):
@@ -94,8 +44,8 @@ class DeepConvNet(nn.Module):
         self.projection = nn.Linear(25, 56, bias=False)
 
         initialize_weight(self, weight_init_method)
-        self.crossattention= CrossAttention(query_dim=512, context_dim=512)
-        
+        # self.crossattention= CrossAttention(query_dim=512, context_dim=512)
+        self.crossattention = SpatialTransformer(in_channels=512, n_heads = 8, d_head= 64, context_dim=512, depth = 2)
         ### time embedding
         self.embed_dim = block_out_channels[0]
         
@@ -182,8 +132,10 @@ class DeepConvNet(nn.Module):
             # after deep block 1: torch.Size([32, 256, 19, 3])
             # after deep block 2: torch.Size([32, 512, 25, 1])
 
-        out = out.view(batch_size, self.embedding_dim, -1) # -> [32, 40, 125]
+        out = out.view(batch_size, self.embedding_dim, -1) # -> [32, 512, 25]
         out = self.projection(out)
         out = out.permute(0, 2, 1)
-        out = self.crossattention(out, condition)
+        # out = self.crossattention(out, condition)
+        out = self.crossattention(out.permute(0,2,1), condition)
+        out = out.permute(0,2,1)
         return out

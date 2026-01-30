@@ -24,6 +24,7 @@ from dataclasses import asdict
 from module.compare_model.EEGNet import EEGNet
 from module.compare_model.DeepConvNet import DeepConvNet
 import re
+from torch.optim.swa_utils import AveragedModel
 
 # import os, tempfile
 # TMPDIR = "/home/pymp_tmp"
@@ -75,7 +76,10 @@ def eval_model(dataloaders, device, tokenizer, model, output_all_results_path = 
     pred_tokens_list_previous = []
     pred_string_list_previous = []
 
-
+    # ema_model = AveragedModel(
+    #     model,
+    #     avg_fn=lambda avg, param, n: 0.999 * avg + 0.001 * param
+    # )
     with open(output_all_results_path,'w') as f:
         vocab_size = tokenizer.vocab_size
         for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sentiment_label, sent_level_EEG in tqdm(dataloaders['test'], file=sys.stderr):
@@ -108,6 +112,7 @@ def eval_model(dataloaders, device, tokenizer, model, output_all_results_path = 
             
             # Original code 
             seq2seqLMoutput,_ = model(input_embeddings_batch, input_masks_batch, target_ids_batch, context) # (batch, time, n_class)
+            # seq2seqLMoutput,_ = ema_model(input_embeddings_batch, input_masks_batch, target_ids_batch, context) # (batch, time, n_class)
             logits_previous = seq2seqLMoutput.logits
             probs_previous = logits_previous[0].softmax(dim = 1)
             values_previous, predictions_previous = probs_previous.topk(1)
@@ -136,7 +141,6 @@ def eval_model(dataloaders, device, tokenizer, model, output_all_results_path = 
                                        do_sample=True,
                                        repetition_penalty= 5.0,
                                        no_repeat_ngram_size = 2,
-                                       
                                        # num_beams=5,encoder_no_repeat_ngram_size =1,
                                        # do_sample=True, top_k=15,temperature=0.5,num_return_sequences=5,
                                        # early_stopping=True

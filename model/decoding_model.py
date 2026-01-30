@@ -25,14 +25,17 @@ class DELTA(Wrapper_DELTA):
         if self.is_diffusion:
             self._schedule = register_schedule(beta_schedule = noise_scheduler, device = device)
             self.time_step = time_step
+            self.fc2 = nn.Linear(840, 512)
+            self.fc3 = nn.Linear(512, 105)
 
         self.fc1 = nn.Linear(512, 1024)
-        self.fc2 = nn.Linear(840, 512)
+
+        
         # if self.is_DConvNet:
         #     self.fc3 = nn.Linear(1024, 105)
         # else:
         #     self.fc3 = nn.Linear(512, 105)
-        self.fc3 = nn.Linear(512, 105)
+        
     @torch.no_grad()
     def generate(
             self,
@@ -53,9 +56,10 @@ class DELTA(Wrapper_DELTA):
 
         z, _ = self.layer.encode(input_embeddings_batch)
 
-        condition = self.layer.text_embedding(context)
+        
 
         if self.is_diffusion:
+            condition = self.layer.text_embedding(context)
             device = input_embeddings_batch.device
             # --- diffusion process ---
             noise = torch.randn_like(z, device=device)
@@ -98,25 +102,13 @@ class DELTA(Wrapper_DELTA):
         context: Target Text [32, 56]
         '''
 
-        # z, _ = self.layer.encode(input_embeddings_batch)
-        
-        # # condition = self.layer.text_embedding(context)
-        # latent_vector = self.layer.denoising(z) # (B, 56, 512)
-        
-        # if not self.is_DConvNet:
-        #     embedding_out = self.fc1(latent_vector) # (B, 56, 1024)
-        # else:
-        #     embedding_out = latent_vector
-        
-        # out = self.layer.pretrained_LM(inputs_embeds = embedding_out, attention_mask = input_masks_batch,
-        #                                 return_dict = True, labels = target_ids_batch_converted)# (B, 56, vocab_size)
-        # return out, out.loss
 
         z, _ = self.layer.encode(input_embeddings_batch)
 
-        condition = self.layer.text_embedding(context)
+        
 
         if self.is_diffusion:
+            condition = self.layer.text_embedding(context)
             device = input_embeddings_batch.device
             # --- diffusion process ---
             noise = torch.randn_like(z, device=device)

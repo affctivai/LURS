@@ -1,0 +1,5 @@
+File: results/best_unique_sent_linear_1000_DELTA.txt
+------------------------------------------------------------------------------------------
+file results/best_unique_sent_linear_1000_DELTA.txt Mean BLEU (no tf): [0.9855990117798705, 0.9637034485421262, 0.9413410770755569, 0.9194014302802148]
+file results/best_unique_sent_linear_1000_DELTA.txt Mean BLEU (tf): [0.9997120472870931, 0.999174664838911, 0.9984485708211166, 0.9978063897928675]
+

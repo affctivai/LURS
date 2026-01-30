@@ -45,49 +45,36 @@ The script converts all recordings to pickled tensors and splits them into *trai
 
 ## Training
 
-### 1. Easy start
+### 1. Autoencoder Pre-training
 ```bash
-./script/train_decoding.sh <pretrained_model_name> <model_name> <cuda_id> [subject]
-```
-
-pretrained_model_name must be included [pretrain, DConv_pretrain, EEGNet_pretrain, wo_diffusion_pretrain]
-
-model_name must be included  ['DELTA', 'wo_diffusion', 'DConv', 'EEGNet', 'wo_pretrained','main_diffusion', 'full_diffusion']
-
-
-subject is optional
-subjects=( 'ZAB' 'ZDM' 'ZGW' 'ZJM' 'ZJN' 'ZJS' 'ZKB' 'ZKH' 'ZKW' 'ZMG' 'ZPH' )
-subjects=('YDR' 'YFR' 'YFS' 'YAC' 'YDG' 'YHS' 'YMD' 'YLS' 'YRH' 'YRK' 'YSD' 'YRP' 'YSL' 'YTL' 'YAG' 'YAK' 'YIS' 'YMS' )
-
-
-### 2. Autoencoder Pre-training
-```bash
-python3 pretrain.py --model_name "$pretrain_name" \
+python3 pretrain.py \
     --task_name task1_task2_taskNRv2 \
     --num_epoch 100 \
+    --train_input EEG \
     -lr 0.00002 \
-    -b $batch \
-    --cuda "$cuda" \
-    -setting "$subject" \
-    -n "$noise" \
-    -ts "$time_step" \
-    -s ./save_model/checkpoints/autoencoder
+    -b 32 \
+    --cuda cuda:0 \
+    -s ./checkpoints/encoder
 ```
 *Outputs*  
 `checkpoints/autoencoder/best/pretrained_module_*.pt`
 
-### 3. Two-Step Full Model Training
+### 2. Two-Step Full Model Training
 ```bash
-python3 pretrain.py --model_name "$pretrain_name" \
+python3 train_diffusion.py --model_name BrainTranslator \
     --task_name task1_task2_taskNRv2 \
-    --num_epoch 100 \
-    -lr 0.00002 \
-    -b $batch \
-    --cuda "$cuda" \
-    -setting "$subject" \
-    -n "$noise" \
-    -ts "$time_step" \
-    -s ./save_model/checkpoints/autoencoder
+    --two_step \
+    --num_epoch_step1 100 \
+    --num_epoch_step2 50 \
+    --train_input EEG \
+    -lr1 0.00002 \
+    -lr2 0.00002 \
+    -b 32 \
+    --cuda cuda:1 \
+    -s ./checkpoints \
+    --text_encoder _ \
+    --eeg_encoder checkpoints/encoder/best/pretrained_module_task1_task2_taskNRv2_32_100_2e-05.pt \
+    --save_name [savae name]
 ```
 
 ---

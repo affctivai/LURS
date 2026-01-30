@@ -1,0 +1,5 @@
+File: results/best_2time-depth-EEGNet.txt
+------------------------------------------------------------------------------------------
+file results/best_2time-depth-EEGNet.txt Mean BLEU (no tf): [0.9868716870728935, 0.9696887854055348, 0.9511289773669532, 0.9330121382610695]
+file results/best_2time-depth-EEGNet.txt Mean BLEU (tf): [1.0, 0.9999721172159421, 0.9998562903726964, 0.9975860011075706]
+

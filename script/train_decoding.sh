@@ -21,6 +21,7 @@ cuda=cuda:"$3"
 # ['DELTA', 'wo_diffusion', 'DConv', 'EEGNet', 'wo_pretrained','main_diffusion', 'full_diffusion']
 # [pretrain, DConv_pretrain, EEGNet_pretrain, wo_diffusion_pretrain]
 # subject ['ZAB', 'ZDM', 'ZGW', 'ZJM', 'ZJN', 'ZJS', 'ZKB', 'ZKH', 'ZKW', 'ZMG', 'ZPH']
+# subjects=('YDR' 'YFR' 'YFS' 'YAC' 'YDG' 'YHS' 'YMD' 'YLS' 'YRH' 'YRK' 'YSD' 'YRP' 'YSL' 'YTL' 'YAG' 'YAK' 'YIS' 'YMS' )
 
 if [ -n "${4:-}" ]; then
     subject=$4
@@ -29,7 +30,7 @@ else
 fi
 
 batch=32
-noise="linear"
+noise="sqrt"
 time_step=1000
 
 
@@ -44,8 +45,8 @@ if [ "$model_name" != "w/o_pretrained" ]; then
         -b $batch \
         --cuda "$cuda" \
         -setting "$subject" \
-        -n "$noise" \
         -ts "$time_step" \
+        -n "$noise" \
         -s ./save_model/checkpoints/autoencoder
 else
     pretrained_module="Default_setting"

@@ -1,0 +1,8 @@
+File: results/best_WcrossAttention.txt
+------------------------------------------------------------------------------------------
+file results/best_WcrossAttention.txt Mean BLEU (no tf): 0.0048505371454543155
+file results/best_WcrossAttention.txt Mean ROUGE (no tf): 0.12778487303720903
+
+file results/best_WcrossAttention.txt Mean BLEU (tf): 0.04719423938331429
+file results/best_WcrossAttention.txt Mean ROUGE (tf): 0.12778487303720903
+

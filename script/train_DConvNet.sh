@@ -29,11 +29,10 @@ else
 fi
 
 batch=32
-noise="linear"
+noise="cosine"
 time_step=1000
 
-save_name="WcrosAttention_t-emb_DConvNet"
-
+save_name="cosine_Transformer_t-emb_DConvNet"
 
 if [ "$model_name" != "w/o_pretrained" ]; then
     pretrained_module="$subject"_"$save_name"-module

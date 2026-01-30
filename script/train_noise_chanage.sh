@@ -17,6 +17,9 @@ pretrain_name=$1
 model_name=$2
 cuda=cuda:"$3"
 
+
+# ['DELTA', 'wo_diffusion', 'DConv', 'EEGNet', 'wo_pretrained','main_diffusion', 'full_diffusion']
+# [pretrain, DConv_pretrain, EEGNet_pretrain, wo_diffusion_pretrain]
 # subject ['ZAB', 'ZDM', 'ZGW', 'ZJM', 'ZJN', 'ZJS', 'ZKB', 'ZKH', 'ZKW', 'ZMG', 'ZPH']
 
 if [ -n "${4:-}" ]; then
@@ -26,7 +29,7 @@ else
 fi
 
 batch=32
-noise="sqrt"
+noise="cosine"
 time_step=1000
 
 if [ "$model_name" != "w/o_pretrained" ]; then

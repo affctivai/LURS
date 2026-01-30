@@ -4,7 +4,7 @@ import torch
 import pickle
 from torch.utils.data import Dataset, DataLoader
 import json
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from glob import glob
 from transformers import BartTokenizer, BertTokenizer
 from tqdm import tqdm
@@ -138,11 +138,12 @@ class ZuCo_dataset(Dataset):
             input_dataset_dicts = [input_dataset_dicts]
         print(f'[INFO]loading {len(input_dataset_dicts)} task datasets')
 
-        count = 0
         for input_dataset_dict in input_dataset_dicts:
 
             subjects = list(input_dataset_dict.keys())
-            
+            # number = random.randint(0, 17)
+            # test_subj
+            # train_subj
             total_num_sentence = len(input_dataset_dict[subjects[0]])
             
 
@@ -160,6 +161,7 @@ class ZuCo_dataset(Dataset):
                 elif phase == 'dev':
                     print('[INFO]initializing a dev set...')
                     for key in subjects:
+                        # for i in range(train_divider,dev_divider):
                         for i in range(train_divider,dev_divider):
                             input_sample = get_input_sample(input_dataset_dict[key][i],self.tokenizer,eeg_type,bands = bands, add_CLS_token = is_add_CLS_token)
                             if input_sample is not None:
@@ -176,47 +178,35 @@ class ZuCo_dataset(Dataset):
                 # subject ['ZAB', 'ZDM', 'ZGW', 'ZJM', 'ZJN', 'ZJS', 'ZKB', 'ZKH', 'ZKW'] for train
                 # subject ['ZMG'] for dev
                 # subject ['ZPH'] for test
-                train_divider = int(0.9*total_num_sentence)
-                dev_divider = train_divider + int(0.1*total_num_sentence)
-                test_subj = setting
-                if test_subj not in subjects:
-                    count += 1
-                    if phase == 'train':
-                        for i in range(dev_divider):
-                            for key in subjects:
+                # subjects=('YDR' 'YFR' 'YFS' 'YAC' 'YDG' 'YHS' 'YMD' 'YLS' 'YRH' 'YRK' 'YSD' 'YRP' 'YSL' 'YTL' 'YAG' 'YAK' 'YIS' 'YMS' )
+                subjects.remove(setting)
+                train_divider = int(0.8*total_num_sentence)
+                dev_divider = train_divider + int(0.2*total_num_sentence)
+                # ['YDR', 'YFR', 'YFS', 'YAC', 'YDG', 'YHS', 'YMD', 'YLS', 'YRH', 'YRK', 'YSD', 'YRP', 'YSL', 'YTL', 'YAG', 'YAK', 'YIS', 'YMS']
+                if phase == 'test':
+                    print(f'[INFO]initializing a test set using {setting} setting...')
+                    
+                    for i in range(total_num_sentence):
+                        input_sample = get_input_sample(input_dataset_dict[setting][i],self.tokenizer,eeg_type,bands = bands, add_CLS_token = is_add_CLS_token)
+                        if input_sample is not None:
+                            self.inputs.append(input_sample)
+                        else:
+                            ValueError(f'no valid test sample for {setting}, please check your setting!')
+                if phase == 'train':
+                    for key in subjects:
+                        for i in range(train_divider):
                                 input_sample = get_input_sample(input_dataset_dict[key][i],self.tokenizer,eeg_type,bands = bands, add_CLS_token = is_add_CLS_token)
                                 if input_sample is not None:
                                     self.inputs.append(input_sample)
-                    if phase == 'dev':
-                        for i in range(dev_divider, total_num_sentence):
-                            for key in subjects:
-                                input_sample = get_input_sample(input_dataset_dict[key][i],self.tokenizer,eeg_type,bands = bands, add_CLS_token = is_add_CLS_token)
-                                if input_sample is not None:
-                                    self.inputs.append(input_sample)
-                else:
-                    subjects.remove(test_subj)
-                    if phase == 'train':
-                        for i in range(dev_divider):
-                            for key in subjects:
-                                input_sample = get_input_sample(input_dataset_dict[key][i],self.tokenizer,eeg_type,bands = bands, add_CLS_token = is_add_CLS_token)
-                                if input_sample is not None:
-                                    self.inputs.append(input_sample)
-                    if phase == 'dev':
-                        for i in range(dev_divider, total_num_sentence):
-                            for key in subjects:
-                                input_sample = get_input_sample(input_dataset_dict[key][i],self.tokenizer,eeg_type,bands = bands, add_CLS_token = is_add_CLS_token)
-                                if input_sample is not None:
-                                    self.inputs.append(input_sample)
-                    if phase == 'test':
-                        print(f'[INFO]initializing a test set using {setting} setting...')
-                        for i in range(total_num_sentence):
-                            input_sample = get_input_sample(input_dataset_dict[test_subj][i],self.tokenizer,eeg_type,bands = bands, add_CLS_token = is_add_CLS_token)
+                if phase == 'dev':
+                    for i in range(train_divider, dev_divider):
+                        for key in subjects:
+                            input_sample = get_input_sample(input_dataset_dict[key][i],self.tokenizer,eeg_type,bands = bands, add_CLS_token = is_add_CLS_token)
                             if input_sample is not None:
                                 self.inputs.append(input_sample)
-                            else:
-                                ValueError(f'no valid test sample for {test_subj}, please check your setting!')
-            # print('++ adding task to dataset, now we have:', len(self.inputs))
 
+            # print('++ adding task to dataset, now we have:', len(self.inputs))
+                    
         print('[INFO]input tensor size:', self.inputs[0]['input_embeddings'].size())
         print()
 
@@ -236,48 +226,6 @@ class ZuCo_dataset(Dataset):
             input_sample['sent_level_EEG']
         )
         # keys: input_embeddings, input_attn_mask, input_attn_mask_invert, target_ids, target_mask, 
-
-
-"""for train classifier on stanford sentiment treebank text-sentiment pairs"""
-class SST_tenary_dataset(Dataset):
-    def __init__(self, ternary_labels_dict, tokenizer, max_len = 56, balance_class = True):
-        self.inputs = []
-        
-        pos_samples = []
-        neg_samples = []
-        neu_samples = []
-
-        for key,value in ternary_labels_dict.items():
-            tokenized_inputs = tokenizer(key, padding='max_length', max_length=max_len, truncation=True, return_tensors='pt', return_attention_mask = True)
-            input_ids = tokenized_inputs['input_ids'][0]
-            attn_masks = tokenized_inputs['attention_mask'][0]
-            label = torch.tensor(value)
-            # count:
-            if value == 0:
-                neg_samples.append((input_ids,attn_masks,label))
-            elif value == 1:
-                neu_samples.append((input_ids,attn_masks,label))
-            elif value == 2:
-                pos_samples.append((input_ids,attn_masks,label))
-        print(f'Original distribution:\n\tVery positive: {len(pos_samples)}\n\tNeutral: {len(neu_samples)}\n\tVery negative: {len(neg_samples)}')    
-        if balance_class:
-            print(f'balance class to {min([len(pos_samples),len(neg_samples),len(neu_samples)])} each...')
-            for i in range(min([len(pos_samples),len(neg_samples),len(neu_samples)])):
-                self.inputs.append(pos_samples[i])
-                self.inputs.append(neg_samples[i])
-                self.inputs.append(neu_samples[i])
-        else:
-            self.inputs = pos_samples + neg_samples + neu_samples
-        
-    def __len__(self):
-        return len(self.inputs)
-
-    def __getitem__(self, idx):
-        input_sample = self.inputs[idx]
-        return input_sample
-        # keys: input_embeddings, input_attn_mask, input_attn_mask_invert, target_ids, target_mask, 
-        
-
 
 '''sanity test'''
 if __name__ == '__main__':

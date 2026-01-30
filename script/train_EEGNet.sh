@@ -32,7 +32,7 @@ batch=32
 noise="linear"
 time_step=1000
 
-save_name="WcrosAttention_t-embed_EEGNet"
+save_name="WTransformer_t-embed_EEGNet"
 
 
 if [ "$model_name" != "w/o_pretrained" ]; then

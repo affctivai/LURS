@@ -7,62 +7,10 @@ import numpy as np
 from inspect import isfunction
 from einops import rearrange, repeat    
 from torch import einsum
-
-def exists(val):
-    return val is not None
-
-def default(val, d):
-    if exists(val):
-        return val
-    return d() if isfunction(d) else d
-
-class CrossAttention(nn.Module):
-    def __init__(self, query_dim, context_dim=None, heads=8, dim_head=64, dropout=0.,checkpoint=True):
-        super().__init__()
-        inner_dim = dim_head * heads
-        context_dim = default(context_dim, query_dim)
-
-        self.scale = dim_head ** -0.5
-        self.heads = heads
-
-        self.to_q = nn.Linear(query_dim, inner_dim, bias=False)
-        self.to_k = nn.Linear(context_dim, inner_dim, bias=False)
-        self.to_v = nn.Linear(context_dim, inner_dim, bias=False)
-        self.checkpoint = checkpoint
-
-        self.to_out = nn.Sequential(
-            nn.Linear(inner_dim, query_dim),
-            nn.Dropout(dropout)
-        )
-
-    # def forward(self, x, context=None):
-    #     context = default(context, x)
-    #     return checkpoint(self._forward, (x, context), self.parameters(), self.checkpoint)
-
-    def forward(self, x, context=None, mask=None):
-        h = self.heads
-
-        q = self.to_q(x)
-        context = default(context, x)
-        k = self.to_k(context)
-        v = self.to_v(context)
-
-        q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> (b h) n d', h=h), (q, k, v))
-
-        sim = einsum('b i d, b j d -> b i j', q, k) * self.scale
-
-        if exists(mask):
-            mask = rearrange(mask, 'b ... -> b (...)')
-            max_neg_value = -torch.finfo(sim.dtype).max
-            mask = repeat(mask, 'b j -> (b h) () j', h=h)
-            sim.masked_fill_(~mask, max_neg_value)
-
-        # attention, what we cannot get enough of
-        attn = sim.softmax(dim=-1)
-
-        out = einsum('b i j, b j d -> b i d', attn, v)
-        out = rearrange(out, '(b h) n d -> b n (h d)', h=h)
-        return self.to_out(out)
+import torch.nn.functional as F
+from module.ldm.util import checkpoint
+from module.ldm.attention import SpatialTransformer
+from module.ldm.attention import CrossAttention
 
 from einops import repeat
 import math
@@ -123,7 +71,7 @@ class EEGNet(nn.Module):
 
         initialize_weight(self, weight_init_method)
 
-        self.crossattention = CrossAttention(query_dim=512, context_dim=512)
+        self.crossattention = SpatialTransformer(in_channels=512, n_heads = 8, d_head= 64, context_dim=512, depth = 2)
 
         ### time embedding
         self.embed_dim = F1 // 4
@@ -212,7 +160,7 @@ class EEGNet(nn.Module):
         out = out.permute(0, 2, 1)  # 채널과 시간 차원 교환 -> (Batch,1, F2)
         out = self.conv1x1(out)  # -> (Batch, 56, F2)
         out = self.projection_head(out) # -> (Batch, 56, 512)
-        out = self.crossattention(out, condition)
-
+        out = self.crossattention(out.permute(0,2,1), condition)
+        out = out.permute(0,2,1)
 
         return out
