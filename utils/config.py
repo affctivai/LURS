@@ -38,6 +38,8 @@ def get_config(case):
         parser.add_argument('-geo', '--is_geo', help='use Geometric loss?', action='store_true')
         parser.add_argument('-kl', '--is_kl', help='use kl loss?', action='store_true')
 
+        parser.add_argument('-inputs', '--test_input', help = 'choose dataset setting from eeg or noise', default = 'eeg', required=False)
+
         args = vars(parser.parse_args())
 
     elif case == 'train_diffusion': 
@@ -70,6 +72,8 @@ def get_config(case):
         parser.add_argument('-n', '--noise_scheduler', help='select noise scheduler', default = 'linear' , required=False)
         parser.add_argument('-ts', '--time_step', type = int, help='selecttime step', default = 1000 , required=False)
         
+        parser.add_argument('-inputs', '--test_input', help = 'choose dataset setting from eeg or noise', default = 'eeg', required=False)
+
         args = vars(parser.parse_args())
 
     elif case == 'eval_decoding':

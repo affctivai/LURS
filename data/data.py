@@ -226,7 +226,288 @@ class ZuCo_dataset(Dataset):
             input_sample['sent_level_EEG']
         )
         # keys: input_embeddings, input_attn_mask, input_attn_mask_invert, target_ids, target_mask, 
+# =========================================================
+# Memmap-friendly NPY Dataset (RAM efficient)
+# =========================================================
 
+def _resolve_memmap_root(task_dir: str) -> str:
+    """
+    task_dir는 보통:
+      /mnt/Members/speech/jd_data/zuco_decoding_npy/task1-SR
+    converter가 만든 실제 memmap root는:
+      <task_dir>/memmap_v1
+    """
+    task_dir = str(task_dir)
+    # 1) task_dir 자체가 memmap_v1 일 수도 있음
+    cand1 = os.path.join(task_dir, "meta.json")
+    if os.path.isfile(cand1):
+        return task_dir
+
+    cand2 = os.path.join(task_dir, "memmap_v1", "meta.json")
+    if os.path.isfile(cand2):
+        return os.path.join(task_dir, "memmap_v1")
+
+    # 그 외: 하위에서 meta.json 탐색
+    for sub in ["memmap", "memmap_v0", "memmap_v1", "memmap_v2"]:
+        cand = os.path.join(task_dir, sub, "meta.json")
+        if os.path.isfile(cand):
+            return os.path.join(task_dir, sub)
+
+    raise FileNotFoundError(
+        f"meta.json not found. Expected one of:\n"
+        f"  - {task_dir}/meta.json\n"
+        f"  - {task_dir}/memmap_v1/meta.json\n"
+        f"(did you run convert_zuco_pickle_to_memmap_npy.py?)"
+    )
+
+
+class _ZuCoMemmapPart:
+    """
+    하나의 task(=하나의 pickle) + 하나의 phase(train/dev/test) 에 해당하는 memmap 조각.
+    subject='ALL' 또는 특정 subject slice만 참조하도록 구성 가능.
+    """
+    def __init__(self, memmap_root: str, phase: str, subject: str,
+                 expected: dict,
+                 mmap_mode: str = "r",
+                 require_meta: bool = True,
+                 noise = False):
+        self.memmap_root = memmap_root
+        self.phase = phase
+        self.subject = subject
+        self.mmap_mode = mmap_mode
+        self.require_meta = require_meta
+        self.noise = noise
+        meta_path = os.path.join(memmap_root, "meta.json")
+        if not os.path.isfile(meta_path):
+            if require_meta:
+                raise FileNotFoundError(f"meta.json not found: {meta_path}")
+            else:
+                self.meta = None
+                return
+
+        with open(meta_path, "r", encoding="utf-8") as f:
+            self.meta = json.load(f)
+
+        # config 일치 검사 (정확히 동일한 역할 보장용)
+        # (meta가 없으면 검사 불가)
+        for k, v in expected.items():
+            if k not in self.meta:
+                continue
+            if self.meta[k] != v:
+                raise ValueError(
+                    f"[CONFIG MISMATCH] {k}: requested={v} but file_meta={self.meta[k]}\n"
+                    f"  memmap_root={memmap_root}\n"
+                    f"  (re-convert with the same config)"
+                )
+
+        if phase not in self.meta["phases"]:
+            raise ValueError(f"phase '{phase}' not in meta phases: {list(self.meta['phases'].keys())}")
+
+        phase_info = self.meta["phases"][phase]
+        self.total_len = int(phase_info["num_samples"])
+        self.subjects = phase_info["subjects"]
+        self.subject_slices = phase_info["subject_slices"]  # dict: subj -> {start,length}
+
+        # slice 결정
+        if subject == "ALL":
+            self.start = 0
+            self.length = self.total_len
+        else:
+            if subject not in self.subject_slices:
+                raise ValueError(f"subject '{subject}' not found in meta subject_slices.")
+            self.start = int(self.subject_slices[subject]["start"])
+            self.length = int(self.subject_slices[subject]["length"])
+
+        # 파일 경로들
+        phase_dir = os.path.join(memmap_root, phase)
+        self.paths = {
+            "input_embeddings": os.path.join(phase_dir, "input_embeddings.npy"),
+            "sent_level_EEG": os.path.join(phase_dir, "sent_level_EEG.npy"),
+            "input_attn_mask": os.path.join(phase_dir, "input_attn_mask.npy"),
+            "input_attn_mask_invert": os.path.join(phase_dir, "input_attn_mask_invert.npy"),
+            "target_ids": os.path.join(phase_dir, "target_ids.npy"),
+            "target_mask": os.path.join(phase_dir, "target_mask.npy"),
+            "seq_len": os.path.join(phase_dir, "seq_len.npy"),
+            "sentiment_label": os.path.join(phase_dir, "sentiment_label.npy"),
+        }
+
+        # lazy open (DataLoader worker spawn/fork 안전)
+        self._opened = False
+        self._arrays = {}
+
+    def _open_if_needed(self):
+        if self._opened:
+            return
+        # np.load(..., mmap_mode='r') => memmap
+        self._arrays["input_embeddings"] = np.load(self.paths["input_embeddings"], mmap_mode=self.mmap_mode)
+        self._arrays["sent_level_EEG"] = np.load(self.paths["sent_level_EEG"], mmap_mode=self.mmap_mode)
+        self._arrays["input_attn_mask"] = np.load(self.paths["input_attn_mask"], mmap_mode=self.mmap_mode)
+        self._arrays["input_attn_mask_invert"] = np.load(self.paths["input_attn_mask_invert"], mmap_mode=self.mmap_mode)
+        self._arrays["target_ids"] = np.load(self.paths["target_ids"], mmap_mode=self.mmap_mode)
+        self._arrays["target_mask"] = np.load(self.paths["target_mask"], mmap_mode=self.mmap_mode)
+        self._arrays["seq_len"] = np.load(self.paths["seq_len"], mmap_mode=self.mmap_mode)
+        self._arrays["sentiment_label"] = np.load(self.paths["sentiment_label"], mmap_mode=self.mmap_mode)
+        self._opened = True
+
+    def __len__(self):
+        return self.length
+
+    def get(self, local_idx: int):
+        """
+        local_idx: [0, length)
+        반환 포맷은 ZuCo_dataset.__getitem__ 과 동일.
+        """
+        self._open_if_needed()
+        gidx = self.start + int(local_idx)
+
+        def _to_torch(arr):
+            """Convert numpy/memmap row to a torch Tensor safely.
+
+            If arrays are opened with np.load(..., mmap_mode='r'), slices are typically
+            non-writable. torch.from_numpy on a non-writable array emits a warning because
+            in-place writes would be undefined. We avoid the warning by copying only the
+            requested row (NOT the whole dataset).
+            """
+            arr = np.asarray(arr)
+            if not arr.flags.writeable:
+                arr = arr.copy()
+            return torch.from_numpy(arr)
+
+        emb = _to_torch(self._arrays["input_embeddings"][gidx])
+        if self.noise == 'noise':
+            emb = torch.randn_like(emb, dtype=emb.dtype)
+            
+        sent_eeg = _to_torch(self._arrays["sent_level_EEG"][gidx])
+        attn = _to_torch(self._arrays["input_attn_mask"][gidx])
+        attn_inv = _to_torch(self._arrays["input_attn_mask_invert"][gidx])
+        tgt_ids = _to_torch(self._arrays["target_ids"][gidx])
+        tgt_mask = _to_torch(self._arrays["target_mask"][gidx])
+
+        seq_len = int(self._arrays["seq_len"][gidx])
+        sent_lab = torch.tensor(int(self._arrays["sentiment_label"][gidx]), dtype=torch.long)
+
+        return emb, seq_len, attn, attn_inv, tgt_ids, tgt_mask, sent_lab, sent_eeg
+
+
+class ZuCoNpyDataset(Dataset):
+    """
+    메모리 절감형 ZuCo Dataset.
+
+    - converter가 만든 memmap .npy들을 mmap_mode='r'로 열어,
+      __getitem__ 시점에 필요한 row만 읽어옵니다.
+    - 따라서 기존 ZuCo_dataset처럼 self.inputs에 전체를 적재하지 않습니다.
+
+    사용:
+      ds = ZuCoNpyDataset(
+          ["/mnt/.../zuco_decoding_npy/task1-SR", "/mnt/.../task2-NR"],
+          phase="train",
+          tokenizer=tokenizer,
+          subject="ALL",
+          eeg_type="GD",
+          bands=[...],
+          setting="unique_sent",
+          is_add_CLS_token=False,
+          test_input="eeg",
+          max_len=56,
+          mmap_eeg=True,
+          require_meta=True,
+      )
+    """
+    def __init__(
+        self,
+        npy_dataset_paths,
+        phase,
+        tokenizer,
+        subject='ALL',
+        eeg_type='GD',
+        bands=['_t1','_t2','_a1','_a2','_b1','_b2','_g1','_g2'],
+        setting='unique_sent',
+        is_add_CLS_token=False,
+        test_input='eeg',
+        max_len=56,
+        mmap_eeg=True,
+        require_meta=True,
+        float_dtype=None,
+        **kwargs,
+    ):
+        super().__init__()
+        self.tokenizer = tokenizer
+        self.phase = phase
+
+        if isinstance(npy_dataset_paths, (str, os.PathLike)):
+            npy_dataset_paths = [str(npy_dataset_paths)]
+        else:
+            npy_dataset_paths = [str(p) for p in npy_dataset_paths]
+
+        mmap_mode = "r" if mmap_eeg else None
+
+        expected = {
+            "eeg_type": eeg_type,
+            "bands": bands,
+            "max_len": int(max_len),
+            "add_CLS_token": bool(is_add_CLS_token),
+            "test_input": test_input,
+            "setting": setting,
+        }
+
+        # tokenizer 일치 검사 (target_ids/target_mask가 tokenizer에 종속)
+        tok_name = getattr(tokenizer, "name_or_path", None)
+        if tok_name is not None:
+            expected["tokenizer_name"] = tok_name
+        # float_dtype는 meta에 input_embeddings dtype으로 들어가는데, 저장된 dtype과 다르면 mismatch.
+        # float_dtype를 강제하고 싶으면 converter에서 동일하게 설정하세요.
+        # 여기서는 float_dtype가 주어졌을 때만 검사하도록 처리
+        if float_dtype is not None:
+            expected["dtypes"] = expected.get("dtypes", {})
+            # meta['dtypes']['input_embeddings'] 와 맞추는 목적
+            # (meta 전체 dtypes dict 비교는 너무 빡세서 여기선 생략)
+
+        self.parts = []
+        for task_dir in npy_dataset_paths:
+            memmap_root = _resolve_memmap_root(task_dir)
+            part = _ZuCoMemmapPart(
+                memmap_root=memmap_root,
+                phase=phase,
+                subject=subject,
+                expected=expected,
+                mmap_mode=mmap_mode,
+                require_meta=require_meta,
+                noise = True if test_input == "noise" else False
+            )
+            self.parts.append(part)
+
+        # cumulative lengths (concat)
+        self._cum = []
+        s = 0
+        for p in self.parts:
+            s += len(p)
+            self._cum.append(s)
+
+        if len(self) == 0:
+            raise ValueError("Dataset length is 0. Check phase/subject/config or conversion results.")
+
+
+    def __len__(self):
+        return self._cum[-1] if self._cum else 0
+
+    def _locate(self, idx: int):
+        if idx < 0:
+            idx = len(self) + idx
+        if idx < 0 or idx >= len(self):
+            raise IndexError(idx)
+
+        # find first cum > idx
+        for part_i, end in enumerate(self._cum):
+            if idx < end:
+                start = 0 if part_i == 0 else self._cum[part_i - 1]
+                local = idx - start
+                return self.parts[part_i], local
+        raise IndexError(idx)
+
+    def __getitem__(self, idx):
+        part, local_idx = self._locate(idx)
+        return part.get(local_idx)
+    
 '''sanity test'''
 if __name__ == '__main__':
 

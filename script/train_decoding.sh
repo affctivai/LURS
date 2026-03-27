@@ -30,10 +30,10 @@ else
 fi
 
 batch=32
-noise="sqrt"
+noise="linear"
 time_step=1000
-
-
+test_input="noise"
+save_name="noise_sample"
 
 
 if [ "$model_name" != "w/o_pretrained" ]; then
@@ -47,7 +47,10 @@ if [ "$model_name" != "w/o_pretrained" ]; then
         -setting "$subject" \
         -ts "$time_step" \
         -n "$noise" \
-        -s ./save_model/checkpoints/autoencoder
+        -con \
+        -s ./save_model/checkpoints/autoencoder \
+        --test_input "$test_input" \
+        --save_name "$save_name"
 else
     pretrained_module="Default_setting"
 fi
@@ -66,7 +69,10 @@ python3 train.py --model_name "$model_name" \
     -lr2 0.00002 \
     -b $batch \
     --cuda "$cuda" \
-    -s ./save_model/checkpoints/DELTA    
+    -con \
+    -s ./save_model/checkpoints/DELTA \
+    --test_input "$test_input" \
+    --save_name "$save_name"
 
 # 활성화 옵션 메모:
 # -con \
@@ -74,3 +80,22 @@ python3 train.py --model_name "$model_name" \
 # -kl \
 
 
+# python3 pretrain.py --model_name pretrain \
+#     --task_name task1_task2_taskNRv2 \
+#     --num_epoch 100 \
+#     -lr 0.00002 \
+#     -b $batch \
+#     --cuda cuda:1 \
+#     -setting unique_sent \
+#     -s ./save_model/checkpoints/autoencoder
+
+# python3 train.py --model_name DELTA \
+#     --task_name task1_task2_taskNRv2 \
+#     --num_epoch_step1 100 \
+#     --num_epoch_step2 50 \
+#     --config_path save_model/config/unique_sent_linear_1000_pretrain-module.json \
+#     -lr1 0.00002 \
+#     -lr2 0.00002 \
+#     -b 32 \
+#     --cuda cuda:1 \
+#     -s ./save_model/checkpoints/DELTA 

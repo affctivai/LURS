@@ -22,7 +22,7 @@ from module.compare_model.EEGNet import EEGNet
 from module.compare_model.DeepConvNet import DeepConvNet
 import sys
 
-
+from data.data import ZuCoNpyDataset
 from torch.optim.swa_utils import AveragedModel
 
 # import os, tempfile
@@ -240,27 +240,27 @@ if __name__ == '__main__':
     print()
 
     ''' set up dataloader '''
-    whole_dataset_dicts = []
-    if 'task1' in task_name:
-        dataset_path_task1 = './dataset/ZuCo/task1-SR/pickle/task1-SR-dataset.pickle'
-        with open(dataset_path_task1, 'rb') as handle:
-            whole_dataset_dicts.append(pickle.load(handle))
-            # zuco_v1.append(pickle.load(handle))
-    if 'task2' in task_name:
-        dataset_path_task2 = './dataset/ZuCo/task2-NR/pickle/task2-NR-dataset.pickle'
-        with open(dataset_path_task2, 'rb') as handle:
-            whole_dataset_dicts.append(pickle.load(handle))
-            # zuco_v1.append(pickle.load(handle))
-    if 'task3' in task_name:
-        dataset_path_task3 = './dataset/ZuCo/task3-TSR/pickle/task3-TSR-dataset.pickle'
-        with open(dataset_path_task3, 'rb') as handle:
-            whole_dataset_dicts.append(pickle.load(handle))
-            # zuco_v1.append(pickle.load(handle))
-    if 'taskNRv2' in task_name:
-        dataset_path_taskNRv2 = './dataset/ZuCo/task2-NR-2.0/pickle/task2-NR-2.0-dataset.pickle'
-        with open(dataset_path_taskNRv2, 'rb') as handle:
-            whole_dataset_dicts.append(pickle.load(handle))
-            # zuco_v2.append(pickle.load(handle))
+    # whole_dataset_dicts = []
+    # if 'task1' in task_name:
+    #     dataset_path_task1 = './dataset/ZuCo/task1-SR/pickle/task1-SR-dataset.pickle'
+    #     with open(dataset_path_task1, 'rb') as handle:
+    #         whole_dataset_dicts.append(pickle.load(handle))
+    #         # zuco_v1.append(pickle.load(handle))
+    # if 'task2' in task_name:
+    #     dataset_path_task2 = './dataset/ZuCo/task2-NR/pickle/task2-NR-dataset.pickle'
+    #     with open(dataset_path_task2, 'rb') as handle:
+    #         whole_dataset_dicts.append(pickle.load(handle))
+    #         # zuco_v1.append(pickle.load(handle))
+    # if 'task3' in task_name:
+    #     dataset_path_task3 = './dataset/ZuCo/task3-TSR/pickle/task3-TSR-dataset.pickle'
+    #     with open(dataset_path_task3, 'rb') as handle:
+    #         whole_dataset_dicts.append(pickle.load(handle))
+    #         # zuco_v1.append(pickle.load(handle))
+    # if 'taskNRv2' in task_name:
+    #     dataset_path_taskNRv2 = './dataset/ZuCo/task2-NR-2.0/pickle/task2-NR-2.0-dataset.pickle'
+    #     with open(dataset_path_taskNRv2, 'rb') as handle:
+    #         whole_dataset_dicts.append(pickle.load(handle))
+    #         # zuco_v2.append(pickle.load(handle))
 
     print()
 
@@ -479,11 +479,56 @@ if __name__ == '__main__':
             eval_model(dataloaders, device, tokenizer, model, output_all_results_path = f'./results/best_{save_name}-{subj}.txt' , score_results=f'./score_results/best_{save_name}-{subj}.txt')
 
     else:
-        train_set = ZuCo_dataset(whole_dataset_dicts, 'train', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
+
+        test_input = args['test_input']
+        train_set = ZuCoNpyDataset(
+                ["./dataset/zuco_decoding_npy/task1-SR", "./dataset/zuco_decoding_npy/task2-NR", "./dataset/zuco_decoding_npy/task2-NR-2.0"],
+                phase="train",
+                tokenizer=tokenizer,
+                subject="ALL",
+                eeg_type=eeg_type_choice,
+                bands=bands_choice,
+                setting=dataset_setting,
+                is_add_CLS_token=False,
+                test_input=test_input,
+                max_len=56,
+                mmap_eeg=True,
+                require_meta=True,
+            )
         # dev dataset
-        dev_set = ZuCo_dataset(whole_dataset_dicts, 'dev', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
-        # test dataset
-        test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
+        dev_set = ZuCoNpyDataset(
+                ["./dataset/zuco_decoding_npy/task1-SR", "./dataset/zuco_decoding_npy/task2-NR", "./dataset/zuco_decoding_npy/task2-NR-2.0"],
+                phase="dev",
+                tokenizer=tokenizer,
+                subject="ALL",
+                eeg_type=eeg_type_choice,
+                bands=bands_choice,
+                setting=dataset_setting,
+                is_add_CLS_token=False,
+                test_input=test_input,
+                max_len=56,
+                mmap_eeg=True,
+                require_meta=True,
+            )
+        test_set = ZuCoNpyDataset(
+                ["./dataset/zuco_decoding_npy/task1-SR", "./dataset/zuco_decoding_npy/task2-NR", "./dataset/zuco_decoding_npy/task2-NR-2.0"],
+                phase="test",
+                tokenizer=tokenizer,
+                subject="ALL",
+                eeg_type=eeg_type_choice,
+                bands=bands_choice,
+                setting=dataset_setting,
+                is_add_CLS_token=False,
+                test_input=test_input,
+                max_len=56,
+                mmap_eeg=True,
+                require_meta=True,
+            )
+        # train_set = ZuCo_dataset(whole_dataset_dicts, 'train', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
+        # # dev dataset
+        # dev_set = ZuCo_dataset(whole_dataset_dicts, 'dev', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
+        # # test dataset
+        # test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
 
         
         dataset_sizes = {'train': len(train_set), 'dev': len(dev_set)}
