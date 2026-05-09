@@ -1,4 +1,3 @@
-import wandb
 import os
 import torch
 import torch.optim as optim
@@ -11,7 +10,7 @@ import copy
 from tqdm import tqdm
 from transformers import BartTokenizer, BartForConditionalGeneration
 
-from data.data import ZuCo_dataset
+from data.data import ZuCoNpyDataset
 from model import *
 from utils import *
 from module.ldm.autoencoder import AutoencoderKL
@@ -20,9 +19,7 @@ from evaluation import eval_model
 from dataclasses import asdict
 from module.compare_model.EEGNet import EEGNet
 from module.compare_model.DeepConvNet import DeepConvNet
-import sys
 
-from data.data import ZuCoNpyDataset
 from torch.optim.swa_utils import AveragedModel
 
 # import os, tempfile
@@ -50,7 +47,6 @@ def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25,
     for epoch in range(1, num_epochs+1):
         print('Epoch {}/{}'.format(epoch, num_epochs))
         print('-' * 10)
-        print('Epoch {}/{}'.format(epoch, num_epochs), file=sys.stderr)
         # Each epoch has a training and validation phase
         for phase in ['train', 'dev']:
             if phase == 'train':
@@ -63,8 +59,8 @@ def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25,
             
             # Iterate over data.
             # for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sent_level_EEG, rawEEG in tqdm(dataloaders[phase]):
-            for  input_embeddings, seq_len, input_masks, input_mask_invert,target_ids, target_mask, sentiment_labels, sent_level_EEG in tqdm(dataloaders[phase], file=sys.stderr):
-                
+            for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sentiment_labels, sent_level_EEG in tqdm(dataloaders[phase]):
+
                 # load in batch
                 input_embeddings_batch = input_embeddings.to(device).float()
                 input_masks_batch = input_masks.to(device)
@@ -98,10 +94,6 @@ def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25,
                 
 
             epoch_loss = running_loss / dataset_sizes[phase]
-
-            wandb.log({
-                f'{phase}_loss':epoch_loss,
-            }, step=epoch)
 
             print('{} Loss: {:.4f}'.format(phase, epoch_loss))
             
@@ -143,85 +135,64 @@ if __name__ == '__main__':
 
     args = get_config('train_diffusion')
 
-    ''' config param'''    
+    ''' config param'''
     num_epochs_step1 = args['num_epoch_step1']
     num_epochs_step2 = args['num_epoch_step2']
     step1_lr = args['learning_rate_step1']
     step2_lr = args['learning_rate_step2']
-    
-    
     batch_size = args['batch_size']
-    
-    model_name = args['model_name'] # DELTA, w/o_diffusion, DConv, EEGNet ...
-    wandb_project_name = model_name
+    model_name = args['model_name']
+
     models = ['DELTA', 'wo_diffusion', 'DConv', 'EEGNet', 'wo_pretrained','main_diffusion', 'full_diffusion']
     if model_name not in models:
         raise ValueError(f'model_name should be chosen from {models}')
-    
-    # task_name = 'task1'
-    # task_name = 'task1_task2'
-    # task_name = 'task1_task2_task3'
-    # task_name = 'task1_task2_taskNRv2'
-    task_name = args['task_name']
-    # train_input = args['train_input'] # word-level or rawEEG
-    # print("train_input is:", train_input)
+
     save_path = args['save_path']
-    
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
     print(f'[INFO]using model: {model_name}')
-    
-    
 
-    base_dir = os.path.dirname(args['config_path'])
-    base_name = os.path.basename(args['config_path'])  # pretrain-module.json
-    is_con = args['is_con']
-    is_geo = args['is_geo']
-    is_kl = args['is_kl']
-
-    if is_con:
-        base_name = 'con_' + base_name
-    if is_geo:
-        base_name = 'geo_' + base_name
-    if is_kl:
-        base_name = 'kl_' + base_name
-
-    module_config_path = os.path.join(base_dir, base_name)
+    # pretrained config를 직접 로드 (경로에 con_/geo_/kl_ 접두사 포함해서 전달)
+    module_config_path = args['config_path']
     with open(module_config_path, 'r') as f:
         configs = json.load(f)
 
     pretrained_args = configs['args']
 
+    # 데이터/모델 관련 세팅은 모두 pretrained config에서 읽음
+    task_name       = pretrained_args['task_name']
+    eeg_type_choice = pretrained_args['eeg_type']
+    bands_choice    = pretrained_args['eeg_bands']
     dataset_setting = pretrained_args['dataset_setting']
-
-    save_name = f"{base_name.split('_pretrain')[0]}_{model_name}" if args['save_name'] is None else args['save_name']
+    subject_choice  = pretrained_args['subjects']
+    test_input      = pretrained_args['test_input']
+    noise_scheduler = pretrained_args['noise_scheduler']
+    time_step       = pretrained_args['time_step']
+    is_con          = pretrained_args['is_con']
+    is_geo          = pretrained_args['is_geo']
+    is_kl           = pretrained_args['is_kl']
+    seed_val        = pretrained_args['seed']
 
     pretrained_model_name = pretrained_args['model_name']
 
+    print(f'[INFO]eeg type {eeg_type_choice}')
+    print(f'[INFO]using bands {bands_choice}')
+    print(f'[INFO]task: {task_name} | subject: {subject_choice} | test_input: {test_input}')
+
+    base_name = os.path.basename(module_config_path)
+    save_name = f"{base_name.split('_pretrain')[0]}_{model_name}" if args['save_name'] is None else args['save_name']
 
     save_path_best = os.path.join(save_path, 'best')
     if not os.path.exists(save_path_best):
         os.makedirs(save_path_best)
-
     output_checkpoint_name_best = os.path.join(save_path_best, f'{save_name}.pt')
 
     save_path_last = os.path.join(save_path, 'last')
     if not os.path.exists(save_path_last):
         os.makedirs(save_path_last)
-
     output_checkpoint_name_last = os.path.join(save_path_last, f'{save_name}.pt')
 
-    # subject_choice = args['subjects'] # ALL
-    # print(f'![Debug]using {subject_choice}')
-    
-    eeg_type_choice = args['eeg_type'] # GD
-    print(f'[INFO]eeg type {eeg_type_choice}')
-    
-    bands_choice = args['eeg_bands'] # ['_t1','_t2','_a1','_a2','_b1','_b2','_g1','_g2'] 
-    print(f'[INFO]using bands {bands_choice}')
-    
-    seed_val = args['seed']
     set_seed(seed_val)
     ''' set random seeds '''
     # https://pytorch.org/docs/stable/notes/randomness.html
@@ -364,10 +335,7 @@ if __name__ == '__main__':
     # else :
     #     is_diffusion_delta = [False, False]
 
-    noise_scheduler = args['noise_scheduler']
-    time_step = args['time_step']
-
-    opts = BuildOptions(model_name = model_name, pretrained_module=pt_module, is_diffusion= is_diffusion, noise_scheduler= noise_scheduler, time_step=time_step, device=device)
+    opts = BuildOptions(model_name=model_name, pretrained_module=pt_module, is_diffusion=is_diffusion, noise_scheduler=noise_scheduler, time_step=time_step, device=device)
 
     model = make_model(opts)
 
@@ -398,197 +366,88 @@ if __name__ == '__main__':
 
     since = time.time()
 
-    args['pretrain_name'] = args['model_name']
     state_dict = {
-        "args":args,
+        "args": args,
+        "pretrained_args": pretrained_args,
         "module_state_dict": {"denoising_module": denoising_module_state_dict, "autoencoder": autoencoder_state_dict},
         "pretrained_module_loss_weights": {'alpha': pt_module.alpha if pt_module else None, 'beta': pt_module.beta if pt_module else None, 'theta': pt_module.theta if pt_module else None, 'is_diffusion': is_diffusion},
-    }    
-    if dataset_setting != "unique_sent":
-        subjects=['YDR', 'YFR', 'YFS', 'YAC', 'YDG', 'YHS', 'YMD', 'YLS', 'YRH', 'YRK', 'YSD', 'YRP', 'YSL', 'YTL', 'YAG', 'YAK', 'YIS', 'YMS']
-        for subj in subjects:
+    }
 
-            train_set = ZuCo_dataset(whole_dataset_dicts, 'train', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = subj)
-            # dev dataset
-            dev_set = ZuCo_dataset(whole_dataset_dicts, 'dev', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = subj)
-            # test dataset
-            
-            dataset_sizes = {'train': len(train_set), 'dev': len(dev_set)}
-            print('[INFO]train_set size: ', len(train_set))
-            print('[INFO]dev_set size: ', len(dev_set))
-            
-            # train dataloader
-            train_dataloader = DataLoader(train_set, batch_size = batch_size, shuffle=True, num_workers=4)
-            # dev dataloader
-            val_dataloader = DataLoader(dev_set, batch_size = 1, shuffle=False, num_workers=4)
-            # dataloaders
-            dataloaders = {'train':train_dataloader, 'dev':val_dataloader}
+    npy_root = "/mnt/Members/speech/jd_data/zuco_decoding_npy/"
+    task_npy_dirs = []
+    if 'task1' in task_name:
+        task_npy_dirs.append(os.path.join(npy_root, "task1-SR"))
+    if 'task2' in task_name:
+        task_npy_dirs.append(os.path.join(npy_root, "task2-NR"))
+    if 'task3' in task_name:
+        task_npy_dirs.append(os.path.join(npy_root, "task3-TSR"))
+    if 'taskNRv2' in task_name:
+        task_npy_dirs.append(os.path.join(npy_root, "task2-NR-2.0"))
 
+    train_set = ZuCoNpyDataset(task_npy_dirs, phase='train', tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
+    dev_set   = ZuCoNpyDataset(task_npy_dirs, phase='dev',   tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
+    test_set  = ZuCoNpyDataset(task_npy_dirs, phase='test',  tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
+    # train_set = ZuCo_dataset(whole_dataset_dicts, 'train', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
+    # # dev dataset
+    # dev_set = ZuCo_dataset(whole_dataset_dicts, 'dev', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
+    # # test dataset
+    # test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
 
-            wandb.init(project= wandb_project_name, name = 'first_stage_'+save_name)
-            model = train_model(dataloaders, device, model, optimizer_step1, exp_lr_scheduler_step1, num_epochs=num_epochs_step1, 
-                                checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'first_stage')
-            wandb.finish()
-            first_step_time = time.time() - since
-            print(f'Step 1 Training complete in {first_step_time//60:.0f}m {first_step_time%60:.0f}s')
-
-            """save config"""
-            cfg_dir = './save_model/config'
-
-            if not os.path.exists(cfg_dir):
-                os.makedirs(cfg_dir)
-
-
-            with open(os.path.join(cfg_dir,f'{save_name}.json'), 'w') as out_config:
-                json.dump(state_dict, out_config, indent = 4)
-            ######################################################
-            '''step two trainig: update whole model for a few iterations'''
-            ######################################################
-            for name, param in model.named_parameters():
-                param.requires_grad = True
-
-            ''' set up optimizer and scheduler'''
-            # optimizer_step2 = optim.Adam(model.parameters(), lr=step2_lr)# (B, 56, vocab_size)
-            optimizer_step2 = optim.SGD(model.parameters(), lr=step2_lr, momentum=0.9)
-            exp_lr_scheduler_step2 = lr_scheduler.StepLR(optimizer_step2, step_size=30, gamma=0.1)
-
-            print()
-            print('=== start Step2 training ... ===')
-            # print training layers
-            # show_require_grad_layers(model)
-            
-            since = time.time()
-            '''main loop'''
-            wandb.init(project=wandb_project_name, name = 'second_stage_'+save_name)
-            model = train_model(dataloaders, device, model, optimizer_step2, exp_lr_scheduler_step2, num_epochs=num_epochs_step2, 
-                                            checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'second_stage')
-            wandb.finish()
-
-            second_step_time = time.time() - since
-            print(f'Step 2 Training complete in {second_step_time//60:.0f}m {second_step_time%60:.0f}s')
-            
-            if not os.path.exists('./results'):
-                os.makedirs('./results')
-            if not os.path.exists('./score_results'):
-                os.makedirs('./score_results')
-
-            test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = subj)
-            print('[INFO]test_set size: ', len(test_set))
-            test_dataloader = DataLoader(test_set, batch_size = 1, shuffle=False, num_workers=4)
-            dataloaders = {'test':test_dataloader}
-            eval_model(dataloaders, device, tokenizer, model, output_all_results_path = f'./results/best_{save_name}-{subj}.txt' , score_results=f'./score_results/best_{save_name}-{subj}.txt')
-
-    else:
-
-        test_input = args['test_input']
-        train_set = ZuCoNpyDataset(
-                ["./dataset/zuco_decoding_npy/task1-SR", "./dataset/zuco_decoding_npy/task2-NR", "./dataset/zuco_decoding_npy/task2-NR-2.0"],
-                phase="train",
-                tokenizer=tokenizer,
-                subject="ALL",
-                eeg_type=eeg_type_choice,
-                bands=bands_choice,
-                setting=dataset_setting,
-                is_add_CLS_token=False,
-                test_input=test_input,
-                max_len=56,
-                mmap_eeg=True,
-                require_meta=True,
-            )
-        # dev dataset
-        dev_set = ZuCoNpyDataset(
-                ["./dataset/zuco_decoding_npy/task1-SR", "./dataset/zuco_decoding_npy/task2-NR", "./dataset/zuco_decoding_npy/task2-NR-2.0"],
-                phase="dev",
-                tokenizer=tokenizer,
-                subject="ALL",
-                eeg_type=eeg_type_choice,
-                bands=bands_choice,
-                setting=dataset_setting,
-                is_add_CLS_token=False,
-                test_input=test_input,
-                max_len=56,
-                mmap_eeg=True,
-                require_meta=True,
-            )
-        test_set = ZuCoNpyDataset(
-                ["./dataset/zuco_decoding_npy/task1-SR", "./dataset/zuco_decoding_npy/task2-NR", "./dataset/zuco_decoding_npy/task2-NR-2.0"],
-                phase="test",
-                tokenizer=tokenizer,
-                subject="ALL",
-                eeg_type=eeg_type_choice,
-                bands=bands_choice,
-                setting=dataset_setting,
-                is_add_CLS_token=False,
-                test_input=test_input,
-                max_len=56,
-                mmap_eeg=True,
-                require_meta=True,
-            )
-        # train_set = ZuCo_dataset(whole_dataset_dicts, 'train', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
-        # # dev dataset
-        # dev_set = ZuCo_dataset(whole_dataset_dicts, 'dev', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
-        # # test dataset
-        # test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
-
-        
-        dataset_sizes = {'train': len(train_set), 'dev': len(dev_set)}
-        print('[INFO]train_set size: ', len(train_set))
-        print('[INFO]dev_set size: ', len(dev_set))
-        print('[INFO]test_set size: ', len(test_set))
-        
-        # train dataloader
-        train_dataloader = DataLoader(train_set, batch_size = batch_size, shuffle=True, num_workers=4)
-        # dev dataloader
-        val_dataloader = DataLoader(dev_set, batch_size = 1, shuffle=False, num_workers=4)
-        test_dataloader = DataLoader(test_set, batch_size = 1, shuffle=False, num_workers=4)
-        # dataloaders
-        dataloaders = {'train':train_dataloader, 'dev':val_dataloader, 'test':test_dataloader}
+    
+    dataset_sizes = {'train': len(train_set), 'dev': len(dev_set)}
+    print('[INFO]train_set size: ', len(train_set))
+    print('[INFO]dev_set size: ', len(dev_set))
+    print('[INFO]test_set size: ', len(test_set))
+    
+    # train dataloader
+    train_dataloader = DataLoader(train_set, batch_size = batch_size, shuffle=True, num_workers=4)
+    # dev dataloader
+    val_dataloader = DataLoader(dev_set, batch_size = 1, shuffle=False, num_workers=4)
+    test_dataloader = DataLoader(test_set, batch_size = 1, shuffle=False, num_workers=4)
+    # dataloaders
+    dataloaders = {'train':train_dataloader, 'dev':val_dataloader, 'test':test_dataloader}
 
 
-        wandb.init(project= wandb_project_name, name = 'first_stage_'+save_name)
-        model = train_model(dataloaders, device, model, optimizer_step1, exp_lr_scheduler_step1, num_epochs=num_epochs_step1, 
-                            checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'first_stage')
-        wandb.finish()
-        first_step_time = time.time() - since
-        print(f'Step 1 Training complete in {first_step_time//60:.0f}m {first_step_time%60:.0f}s')
+    model = train_model(dataloaders, device, model, optimizer_step1, exp_lr_scheduler_step1, num_epochs=num_epochs_step1, 
+                        checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'first_stage')
+    first_step_time = time.time() - since
+    print(f'Step 1 Training complete in {first_step_time//60:.0f}m {first_step_time%60:.0f}s')
 
-        """save config"""
-        cfg_dir = './save_model/config'
+    """save config"""
+    cfg_dir = './save_model/config'
 
-        if not os.path.exists(cfg_dir):
-            os.makedirs(cfg_dir)
+    if not os.path.exists(cfg_dir):
+        os.makedirs(cfg_dir)
 
 
-        with open(os.path.join(cfg_dir,f'{save_name}.json'), 'w') as out_config:
-            json.dump(state_dict, out_config, indent = 4)
-        ######################################################
-        '''step two trainig: update whole model for a few iterations'''
-        ######################################################
-        for name, param in model.named_parameters():
-            param.requires_grad = True
+    with open(os.path.join(cfg_dir,f'{save_name}.json'), 'w') as out_config:
+        json.dump(state_dict, out_config, indent = 4)
+    ######################################################
+    '''step two trainig: update whole model for a few iterations'''
+    ######################################################
+    for name, param in model.named_parameters():
+        param.requires_grad = True
 
-        ''' set up optimizer and scheduler'''
-        # optimizer_step2 = optim.Adam(model.parameters(), lr=step2_lr)# (B, 56, vocab_size)
-        optimizer_step2 = optim.SGD(model.parameters(), lr=step2_lr, momentum=0.9)
-        exp_lr_scheduler_step2 = lr_scheduler.StepLR(optimizer_step2, step_size=30, gamma=0.1)
+    ''' set up optimizer and scheduler'''
+    # optimizer_step2 = optim.Adam(model.parameters(), lr=step2_lr)# (B, 56, vocab_size)
+    optimizer_step2 = optim.SGD(model.parameters(), lr=step2_lr, momentum=0.9)
+    exp_lr_scheduler_step2 = lr_scheduler.StepLR(optimizer_step2, step_size=30, gamma=0.1)
 
-        print()
-        print('=== start Step2 training ... ===')
-        # print training layers
-        # show_require_grad_layers(model)
-        
-        since = time.time()
-        '''main loop'''
-        wandb.init(project=wandb_project_name, name = 'second_stage_'+save_name)
-        model = train_model(dataloaders, device, model, optimizer_step2, exp_lr_scheduler_step2, num_epochs=num_epochs_step2, 
-                                        checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'second_stage')
-        wandb.finish()
+    print()
+    print('=== start Step2 training ... ===')
+    # print training layers
+    # show_require_grad_layers(model)
+    
+    since = time.time()
+    '''main loop'''
+    model = train_model(dataloaders, device, model, optimizer_step2, exp_lr_scheduler_step2, num_epochs=num_epochs_step2, 
+                                    checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'second_stage')
 
-        second_step_time = time.time() - since
-        print(f'Step 2 Training complete in {second_step_time//60:.0f}m {second_step_time%60:.0f}s')
-        
-        if not os.path.exists('./results'):
-            os.makedirs('./results')
-        if not os.path.exists('./score_results'):
-            os.makedirs('./score_results')
-        eval_model(dataloaders, device, tokenizer, model, output_all_results_path = f'./results/best_{save_name}.txt' , score_results=f'./score_results/best_{save_name}.txt')
+    second_step_time = time.time() - since
+    print(f'Step 2 Training complete in {second_step_time//60:.0f}m {second_step_time%60:.0f}s')
+    
+    if not os.path.exists('./results'):
+        os.makedirs('./results')
+    if not os.path.exists('./score_results'):
+        os.makedirs('./score_results')
+    eval_model(dataloaders, device, tokenizer, model, output_all_results_path = f'./results/best_{save_name}.txt' , score_results=f'./score_results/best_{save_name}.txt')
