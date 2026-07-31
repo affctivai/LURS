@@ -213,14 +213,15 @@ class BasicTransformerBlock(nn.Module):
     # def forward(self, x, context=None):
     #     return checkpoint(self._forward, (x, context), self.parameters(), self.checkpoint)
     def forward(self, x, context):
+        trainable_params = [p for p in self.parameters() if p.requires_grad]
         if context is None:
             # context 없이 checkpoint 호출
             return checkpoint(
-                lambda x: self._forward(x, context), (x,), self.parameters(), self.checkpoint
+                lambda x: self._forward(x, context), (x,), trainable_params, self.checkpoint
             )
         else:
             return checkpoint(
-                self._forward, (x, context), self.parameters(), self.checkpoint
+                self._forward, (x, context), trainable_params, self.checkpoint
             )
         
     def _forward(self, x, context=None):

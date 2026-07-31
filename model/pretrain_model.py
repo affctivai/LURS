@@ -9,6 +9,8 @@ from module.ldm.util import q_sample, extract_into_tensor
 from .util import *
 from .wrappers import Wrapper_pretrain
 import sys
+
+
 __all__ = ["pretrainedmodule"]
 
 class pretrainedmodule(Wrapper_pretrain):
@@ -38,10 +40,8 @@ class pretrainedmodule(Wrapper_pretrain):
         self.is_con = is_con
         self.is_geo = is_geo
         self.is_kl = is_kl
-        # self.is_diffusion = is_diffusion[0]
-        # self.is_DConvNet = is_diffusion[1]
         self.is_diffusion = is_diffusion
-        
+
 
         self.alpha = 0.0
         self.beta = 0.0
@@ -64,6 +64,9 @@ class pretrainedmodule(Wrapper_pretrain):
         #     self.fc3 = nn.Linear(512, 105)
         self.fc3 = nn.Linear(512, 105)
 
+
+
+
     def encode(self, x):
         posterior = self.encoder.encode(x)
         encoded_x = posterior.sample() # (B, 56, 105)
@@ -74,6 +77,16 @@ class pretrainedmodule(Wrapper_pretrain):
     def denoising(self, x, emb = None, condition = None):
         return self.denoising_module(x, emb, condition)
     
+    def _feature_extraction_forward(self, z, x, condition):
+        timesteps = None
+        # --- feature extraction ---
+        predicted_noise = self.denoising(z, timesteps, condition)
+        z_recon = self.fc3(predicted_noise)
+        # --- decode ---
+        x_recon = self.encoder.decode(z_recon)
+        loss = F.mse_loss(x_recon, x)
+        return x_recon, loss
+
     def text_embedding(self, x):
         embeded_context = self.pretrained_LM.model.shared(x)
         condition = self.fc2(embeded_context)
@@ -106,18 +119,10 @@ class pretrainedmodule(Wrapper_pretrain):
             # --- loss design ---    
             loss = F.mse_loss(predicted_noise, noise)
         
-        else:
-            timesteps = None
-            # --- feature extraction ---
-            predicted_noise = self.denoising(z, timesteps, condition)
-            # print('[Info]', predicted_noise.shape)
-            
-            z_recon = self.fc3(predicted_noise)
-            # --- decode ---
-            x_recon = self.encoder.decode(z_recon)
-            loss = F.mse_loss(x_recon, x)
 
-        
+        else:
+            x_recon, loss = self._feature_extraction_forward(z, x, condition)
+
 
         if self.is_kl:
             loss = loss + self.alpha * kl_loss

@@ -18,16 +18,16 @@ model_name=$2
 cuda=cuda:"$3"
 
 
-# ['DELTA', 'wo_diffusion', 'DConv', 'EEGNet', 'wo_pretrained','main_diffusion', 'full_diffusion']
-# [pretrain, DConv_pretrain, EEGNet_pretrain, wo_diffusion_pretrain]
+# ['DELTA', 'wo_diffusion', 'DConv', 'EEGNet', 'MLP', 'wo_pretrained','main_diffusion', 'full_diffusion']
+# [pretrain, DConv_pretrain, EEGNet_pretrain, MLP_pretrain, wo_diffusion_pretrain]
 # subject ['ZAB', 'ZDM', 'ZGW', 'ZJM', 'ZJN', 'ZJS', 'ZKB', 'ZKH', 'ZKW', 'ZMG', 'ZPH']
 
 batch=32
 noise="sqrt"
 time_step=1000
 subject=cross
-# subjects=( 'ZAB' 'ZDM' 'ZGW' 'ZJM' 'ZJN' 'ZJS' 'ZKB' 'ZKH' 'ZKW' 'ZMG' 'ZPH' )
-# subjects=('YDR' 'YFR' 'YFS' 'YAC' 'YDG' 'YHS' 'YMD' 'YLS' 'YRH' 'YRK' 'YSD' 'YRP' 'YSL' 'YTL' 'YAG' 'YAK' 'YIS' 'YMS' )
+# subjects=( 'ZAB' 'ZDM' 'ZGW' 'ZJM' 'ZJN' 'ZJS' 'ZKB' 'ZKH' 'ZKW' 'ZMG' 'ZPH' ) 11
+# subjects=('YDR' 'YFR' 'YFS' 'YAC' 'YDG' 'YHS' 'YMD' 'YLS' 'YRH' 'YRK' 'YSD' 'YRP' 'YSL' 'YTL' 'YAG' 'YAK' 'YIS' 'YMS' ) 18
 
 
 

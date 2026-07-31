@@ -19,8 +19,12 @@ from model import *
 from utils import *
 from module.compare_model.EEGNet import EEGNet
 from module.compare_model.DeepConvNet import DeepConvNet
+from module.compare_model.MLP import MLP
 from evaluation import eval_model
 from train import train_model
+from torch.optim.swa_utils import AveragedModel
+import distutils.version  # torch 1.9's tensorboard shim needs this submodule pre-loaded (newer setuptools no longer auto-imports it)
+from torch.utils.tensorboard import SummaryWriter
 
 # import os, tempfile
 # TMPDIR = "/home/pymp_tmp"
@@ -29,12 +33,16 @@ from train import train_model
 # os.environ["TMP"] = TMPDIR
 # tempfile.tempdir = TMPDIR
 
-def train(dataloaders, device, model, optimizer, scheduler, num_epochs=25, checkpoint_path_best = './checkpoints/decoding/best/temp_decoding.pt', checkpoint_path_last = './checkpoints/decoding/last/temp_decoding.pt'):
+def train(dataloaders, device, model, optimizer, scheduler, num_epochs=25, checkpoint_path_best = './checkpoints/decoding/best/temp_decoding.pt', checkpoint_path_last = './checkpoints/decoding/last/temp_decoding.pt', patience = 5, writer=None):
     # modified from: https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
     since = time.time()
     best_model_wts = copy.deepcopy(model.state_dict())
     best_loss = 100000000000
-    early_stopper = EarlyStopping(patience=20) 
+    early_stopper = EarlyStopping(patience=patience)
+    # ema_model = AveragedModel(
+    #     model,
+    #     avg_fn=lambda avg, param, n: 0.999 * avg + 0.001 * param
+    # )
 
     for epoch in range(1, num_epochs+1):
         print('Epoch {}/{}'.format(epoch, num_epochs))
@@ -77,6 +85,7 @@ def train(dataloaders, device, model, optimizer, scheduler, num_epochs=25, check
                         loss.sum().backward()
                         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
                         optimizer.step()
+                        # ema_model.update_parameters(model)
                 # statistics
                 
                 running_loss += loss.sum().item() * input_embeddings_batch.size()[0] # batch loss
@@ -87,21 +96,27 @@ def train(dataloaders, device, model, optimizer, scheduler, num_epochs=25, check
             epoch_loss = running_loss / dataset_sizes[phase]
 
             print('{} Loss: {:.4f}'.format(phase, epoch_loss))
-            
+
+            if writer is not None:
+                writer.add_scalar(f'Loss/{phase}', epoch_loss, epoch)
+                if phase == 'train':
+                    writer.add_scalar('lr', scheduler.get_last_lr()[0], epoch)
+
             # deep copy the model
             if phase == 'dev':
                 if  epoch_loss < best_loss:
                     best_loss = epoch_loss
                     best_model_wts = copy.deepcopy(model.state_dict())
+                    # best_model_wts = copy.deepcopy(ema_model.module.state_dict())
                     '''save checkpoint'''
-                    torch.save(model.state_dict(), checkpoint_path_best)
+                    torch.save(best_model_wts, checkpoint_path_best)
                     print(f'update best on dev checkpoint: {checkpoint_path_best}')
                 # ④ Early Stopping 조건 확인
                 if early_stopper(epoch_loss):
-                    print(f'\nEarly stopping triggered (patience={20}) at epoch {epoch}')
+                    print(f'\nEarly stopping triggered (patience={patience}) at epoch {epoch}')
                     torch.save(model.state_dict(), checkpoint_path_last)
                     model.load_state_dict(best_model_wts)   # 최적 가중치 복원
-                    torch.save(model.state_dict(), checkpoint_path_best)
+                    # torch.save(model.state_dict(), checkpoint_path_best)
 
                     time_elapsed = time.time() - since
                     print(f'Training stopped in {time_elapsed//60:.0f}m {time_elapsed%60:.0f}s')
@@ -116,7 +131,7 @@ def train(dataloaders, device, model, optimizer, scheduler, num_epochs=25, check
     # load best model weights
     torch.save(model.state_dict(), checkpoint_path_last)
     model.load_state_dict(best_model_wts)
-    torch.save(model.state_dict(), checkpoint_path_best)
+    # torch.save(model.state_dict(), checkpoint_path_best)
     print(f'update last checkpoint: {checkpoint_path_last}')
     return model
 
@@ -138,7 +153,7 @@ if __name__ == '__main__':
     
     batch_size = args['batch_size']
     model_name = args['model_name'] # DELTA, w/o_diffusion, DConv, EEGNet ...
-    models = ['pretrain', 'wo_diffusion_pretrain', 'DConv_pretrain', 'EEGNet_pretrain']
+    models = ['pretrain', 'wo_diffusion_pretrain', 'DConv_pretrain', 'EEGNet_pretrain', 'MLP_pretrain']
     if model_name not in models:
         raise ValueError(f'model_name should be chosen from {models}')
     
@@ -156,7 +171,7 @@ if __name__ == '__main__':
 
     experiment_name = f"{noise_scheduler}_{time_step}_{model_name}" if args['save_name'] is None else args['save_name']
 
-    save_name = f"{args['subjects']}_{experiment_name}-module"
+    save_name = f"{args['subjects']}_{experiment_name}-module" if args['save_name'] is None else args['save_name']
  
     if args['is_con']:
         save_name = 'con_' + save_name
@@ -250,7 +265,19 @@ if __name__ == '__main__':
         denoising_module = DeepConvNet(
             **denoising_module_statte_dict
         ).to(device)
-    else: 
+
+    elif model_name == 'MLP_pretrain':
+        denoising_module_statte_dict = {
+            'input_shape': (1, 1, 512, 56),
+            'hidden_dim': 6144,
+            'num_layers': 10,
+            'drop_out': 0.5,
+            'weight_init_method': 'xavier_uniform',
+            }
+        denoising_module = MLP(
+            **denoising_module_statte_dict
+        ).to(device)
+    else:
         denoising_module_statte_dict = {
             'image_size': 512, # 256
             # 'image_size': 256,
@@ -267,7 +294,8 @@ if __name__ == '__main__':
             'transformer_depth': 1, 
             'context_dim': 512, 
             'use_checkpoint': False, 
-            'legacy': False
+            'legacy': False,
+            'dropout': 0.0
             }
         denoising_module = UNetModel(
             **denoising_module_statte_dict
@@ -302,11 +330,13 @@ if __name__ == '__main__':
         **autoencoder_state_dict
     ).to(device)
     
-    if model_name == 'wo_diffusion_pretrain':
+    if model_name == 'wo_diffusion_pretrain' or model_name in ('EEGNet_pretrain', 'DConv_pretrain', 'MLP_pretrain'):
         is_diffusion = False
     else :
         is_diffusion = True
-    
+
+    # is_compare_model = model_name in ('EEGNet_pretrain', 'DConv_pretrain', 'MLP_pretrain')
+
     pretrain_opts = BuildOptions(model_name="pretrain", is_con=is_con, is_geo=is_geo, is_diffusion=is_diffusion,
                                  is_kl=is_kl, autoencoder=autoencoder, denoising_module=denoising_module, pretrained_LM=pretrained_LM, device = device, noise_scheduler = noise_scheduler, time_step = time_step)
 
@@ -327,9 +357,10 @@ if __name__ == '__main__':
     with open(os.path.join(cfg_dir,f'{save_name}.json'), 'w') as out_config:
         json.dump(state_dict, out_config, indent = 4)
 
-
-    optimizer = optim.SGD(pretrain_model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-5)
-    exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
+    # optimizer = optim.SGD(pretrain_model.parameters(), lr=lr, momentum=0.9, weight_decay=1e-5)
+    # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
+    optimizer = optim.AdamW(pretrain_model.parameters(), lr=lr, weight_decay=0.01)
+    exp_lr_scheduler = lr_scheduler.CosineAnnealingLR(optimizer, T_max=num_epoch)
 
     test_input = args['test_input']
     dataset_setting = args['dataset_setting']
@@ -364,14 +395,20 @@ if __name__ == '__main__':
     # train dataloader
     train_dataloader = DataLoader(train_set, batch_size = batch_size, shuffle=True, num_workers=4)
     # dev dataloader
-    val_dataloader = DataLoader(dev_set, batch_size = 1, shuffle=False, num_workers=4)
-    # test_dataloader = DataLoader(test_set, batch_size = 1, shuffle=False, num_workers=4)
+    val_dataloader = DataLoader(dev_set, batch_size = batch_size, shuffle=False, num_workers=4)
+    # test_dataloader = DataLoader(test_set, batch_size = batch_size, shuffle=False, num_workers=4)
     # dataloaders
     # dataloaders = {'train':train_dataloader, 'dev':val_dataloader, 'test':test_dataloader}
     dataloaders = {'train':train_dataloader, 'dev':val_dataloader}
 
+    ''' set up tensorboard '''
+    tb_log_dir = os.path.join(save_path, 'tensorboard', save_name)
+    writer = SummaryWriter(log_dir=tb_log_dir)
+    print(f'[Info] tensorboard logging to {tb_log_dir}')
+
     ''' training loop '''
     since = time.time()
-    model = train(dataloaders, device, pretrain_model, optimizer, exp_lr_scheduler, num_epochs=num_epoch, checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last)
+    model = train(dataloaders, device, pretrain_model, optimizer, exp_lr_scheduler, num_epochs=num_epoch, checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, writer=writer)
     total_time = time.time() - since
     print(f'Training complete in {total_time//60:.0f}m {total_time%60:.0f}s')
+    writer.close()

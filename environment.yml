@@ -25,3 +25,5 @@ dependencies:
     - jiwer
     - einops
     - omegaconf
+    - bert-score
+    - tensorboard

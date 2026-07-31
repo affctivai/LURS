@@ -1,4 +1,5 @@
 import os
+from data.data import ZuCoNpyDataset
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -10,12 +11,12 @@ import torch.nn.functional as F
 import time
 from transformers import BartTokenizer, BartForConditionalGeneration
 # from data.data_for_rawEEG import ZuCo_dataset
-from data.data import ZuCo_dataset
 from model import *
 from utils import *
 from nltk.translate.bleu_score import corpus_bleu
 from rouge import Rouge
 import sys
+from metrics import compute_bertscore, compute_bleurt, compute_entailment, compute_entity_preservation
 # import evaluate
 # from evaluate import load
 from module.ldm.autoencoder import AutoencoderKL
@@ -23,6 +24,7 @@ from module.ldm.openaimodel import UNetModel
 from dataclasses import asdict
 from module.compare_model.EEGNet import EEGNet
 from module.compare_model.DeepConvNet import DeepConvNet
+from module.compare_model.MLP import MLP
 import re
 from torch.optim.swa_utils import AveragedModel
 
@@ -64,6 +66,11 @@ def remove_text_after_token(text, token='</s>'):
         return text[:token_index]  # 토큰 이전까지의 텍스트 반환
     return text  # 토큰이 없으면 원본 텍스트 반환
 
+def truncate_at_eos(ids, eos_token_id):
+    if eos_token_id in ids:
+        return ids[:ids.index(eos_token_id)]
+    return ids
+
 def eval_model(dataloaders, device, tokenizer, model, output_all_results_path = './results/temp.txt' , score_results='./score_results/task.txt'):
     # modified from: https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
     target_string_list = []
@@ -90,52 +97,40 @@ def eval_model(dataloaders, device, tokenizer, model, output_all_results_path = 
             target_ids_batch = target_ids.to(device) # B, 56
             input_mask_invert_batch = input_mask_invert.to(device) # B, 56
             context = target_ids_batch.clone()
+            cur_batch_size = target_ids_batch.shape[0]
 
-            target_tokens = tokenizer.convert_ids_to_tokens(target_ids_batch[0].tolist(), skip_special_tokens = True)
-            target_string = tokenizer.decode(target_ids_batch[0], skip_special_tokens = True)
-            # print('target ids tensor:',target_ids_batch[0])
-            # print('target ids:',target_ids_batch[0].tolist())
-            # print('target tokens:',target_tokens)
-            # print('target string:',target_strininvert.to(device) # B, 56
-            
-            f.write(f'target string: {target_string}\n')
+            # target strings/tokens: one batch_decode call instead of per-sample decode
+            target_strings = tokenizer.batch_decode(target_ids_batch, skip_special_tokens=True)
+            target_tokens_batch = [tokenizer.convert_ids_to_tokens(ids, skip_special_tokens=True) for ids in target_ids_batch.tolist()]
+            f.write(''.join(f'target string: {s}\n' for s in target_strings))
+            target_tokens_list.extend([[t] for t in target_tokens_batch])
+            target_string_list.extend(target_strings)
 
-            # add to list for later calculate bleu metric
-            target_tokens_list.append([target_tokens])
-            target_string_list.append(target_string)
-            
             """replace padding ids in target_ids with -100"""
-            target_ids_batch[target_ids_batch == tokenizer.pad_token_id] = -100 
+            target_ids_batch[target_ids_batch == tokenizer.pad_token_id] = -100
 
-            # target_ids_batch_label = target_ids_batch.clone().detach()
-            # target_ids_batch_label[target_ids_batch_label == tokenizer.pad_token_id] = -100
-            
-            # Original code 
-            seq2seqLMoutput,_ = model(input_embeddings_batch, input_masks_batch, target_ids_batch, context) # (batch, time, n_class)
-            # seq2seqLMoutput,_ = ema_model(input_embeddings_batch, input_masks_batch, target_ids_batch, context) # (batch, time, n_class)
-            logits_previous = seq2seqLMoutput.logits
-            probs_previous = logits_previous[0].softmax(dim = 1)
-            values_previous, predictions_previous = probs_previous.topk(1)
-            predictions_previous = torch.squeeze(predictions_previous)
-            predicted_string_previous = remove_text_after_token(tokenizer.decode(predictions_previous).split('</s></s>')[0].replace('<s>',''))
-            
-            predicted_string_previous = valid_text(predicted_string_previous)
-            f.write(f'predicted string with tf: {predicted_string_previous}\n')
-            predictions_previous = predictions_previous.tolist()
-            truncated_prediction_previous = []
-            for t in predictions_previous:
-                if t != tokenizer.eos_token_id:
-                    truncated_prediction_previous.append(t)
-                else:
-                    break
-            pred_tokens_previous = tokenizer.convert_ids_to_tokens(truncated_prediction_previous, skip_special_tokens = True)
-            pred_tokens_list_previous.append(pred_tokens_previous)
-            pred_string_list_previous.append(predicted_string_previous)
-            
+            # sample latent once (reverse diffusion), reuse for both teacher-forced and free-running below
+            embedding_out = model.encode_and_sample(input_embeddings_batch)
 
-            # Modify code
-            dummy_decoder_input_ids = torch.tensor([[tokenizer.pad_token_id]]).to(device) # B, 1
+            # Original code (teacher-forced)
+            seq2seqLMoutput = model.evaluate(input_embeddings_batch, input_masks_batch, target_ids_batch, input_embeddings_batch, embedding_out=embedding_out) # (batch, time, n_class)
+            predictions_previous_ids = seq2seqLMoutput.logits.argmax(dim=-1) # (B, time) -- argmax == softmax-then-top1
+            raw_strings_previous = tokenizer.batch_decode(predictions_previous_ids, skip_special_tokens=False)
+            predicted_strings_previous = [
+                valid_text(remove_text_after_token(s.split('</s></s>')[0].replace('<s>', '')))
+                for s in raw_strings_previous
+            ]
+            f.write(''.join(f'predicted string with tf: {s}\n' for s in predicted_strings_previous))
+            pred_tokens_list_previous.extend([
+                tokenizer.convert_ids_to_tokens(truncate_at_eos(ids, tokenizer.eos_token_id), skip_special_tokens=True)
+                for ids in predictions_previous_ids.tolist()
+            ])
+            pred_string_list_previous.extend(predicted_strings_previous)
+
+            # Modify code (free-running generation)
+            dummy_decoder_input_ids = torch.full((cur_batch_size, 1), tokenizer.pad_token_id, dtype=torch.long, device=device) # B, 1
             predictions=model.generate(input_embeddings_batch, input_masks_batch, dummy_decoder_input_ids, context,
+                                       embedding_out=embedding_out,
                                        max_length=56,
                                        num_beams=5,
                                        do_sample=True,
@@ -145,32 +140,14 @@ def eval_model(dataloaders, device, tokenizer, model, output_all_results_path = 
                                        # do_sample=True, top_k=15,temperature=0.5,num_return_sequences=5,
                                        # early_stopping=True
                                        )
-            
-            predicted_string=tokenizer.batch_decode(predictions, skip_special_tokens=True)[0]
-            # predicted_string=predicted_string.squeeze()
-            
-            predictions=tokenizer.encode(predicted_string)
-            # print('predicted string:',predicted_string)
-            predicted_string = valid_text(predicted_string)
-            f.write(f'predicted string: {predicted_string}\n')
-            f.write(f'################################################\n\n\n')
 
-            # convert to int list
-            # predictions = predictions.tolist() # 이미 list 형식이다. 
-            truncated_prediction = []
-            for t in predictions:
-                if t != tokenizer.eos_token_id:
-                    truncated_prediction.append(t)
-                else:
-                    break
-            pred_tokens = tokenizer.convert_ids_to_tokens(truncated_prediction, skip_special_tokens = True)
-            # print('predicted tokens:',pred_tokens)
-            pred_tokens_list.append(pred_tokens)
-            pred_string_list.append(predicted_string)
-            # pred_tokens_list.extend(pred_tokens)
-            # pred_string_list.extend(predicted_string)
-            # print('################################################')
-            # print()
+            predicted_strings = [valid_text(s) for s in tokenizer.batch_decode(predictions, skip_special_tokens=True)]
+            f.write(''.join(f'predicted string: {s}\n################################################\n\n\n' for s in predicted_strings))
+            pred_tokens_list.extend([
+                tokenizer.convert_ids_to_tokens(truncate_at_eos(tokenizer.encode(s), tokenizer.eos_token_id), skip_special_tokens=True)
+                for s in predicted_strings
+            ])
+            pred_string_list.extend(predicted_strings)
     # print(f"pred_string_list : {pred_string_list}")
     
     """ calculate corpus bleu score """
@@ -208,6 +185,28 @@ def eval_model(dataloaders, device, tokenizer, model, output_all_results_path = 
         rouge_scores_previous = 'Hypothesis is empty'
 
     print()
+    """ calculate BERTScore / BLEURT / entailment / entity preservation """
+    bertscore_scores = compute_bertscore(pred_string_list, target_string_list, device=device)
+    bertscore_scores_previous = compute_bertscore(pred_string_list_previous, target_string_list, device=device)
+    print('BERTScore F1:', bertscore_scores['f1'])
+    print('BERTScore F1 with tf:', bertscore_scores_previous['f1'])
+
+    bleurt_score = compute_bleurt(pred_string_list, target_string_list, device=device)
+    bleurt_score_previous = compute_bleurt(pred_string_list_previous, target_string_list, device=device)
+    print('BLEURT score:', bleurt_score)
+    print('BLEURT score with tf:', bleurt_score_previous)
+
+    entailment_scores = compute_entailment(pred_string_list, target_string_list, device=device)
+    entailment_scores_previous = compute_entailment(pred_string_list_previous, target_string_list, device=device)
+    print('entailment accuracy:', entailment_scores['entailment_accuracy'])
+    print('entailment accuracy with tf:', entailment_scores_previous['entailment_accuracy'])
+
+    entity_preservation_score = compute_entity_preservation(pred_string_list, target_string_list)
+    entity_preservation_score_previous = compute_entity_preservation(pred_string_list_previous, target_string_list)
+    print('entity preservation accuracy:', entity_preservation_score)
+    print('entity preservation accuracy with tf:', entity_preservation_score_previous)
+
+    print()
     """ calculate WER score """
     #wer = WordErrorRate()
     # wer_scores = wer_metric.compute(predictions=pred_string_list, references=target_string_list)
@@ -230,10 +229,18 @@ def eval_model(dataloaders, device, tokenizer, model, output_all_results_path = 
     file_content = [
     f'corpus_bleu_score = {corpus_bleu_scores}',
     f'rouge_scores = {rouge_scores}',
+    f'bertscore = {bertscore_scores}',
+    f'bleurt_score = {bleurt_score}',
+    f'entailment_scores = {entailment_scores}',
+    f'entity_preservation_accuracy = {entity_preservation_score}',
     # f'wer_scores = {wer_scores}',
     # f'cer_scores = {cer_scores}',
     f'corpus_bleu_score_with_tf = {corpus_bleu_scores_previous}',
     f'rouge_scores_with_tf = {rouge_scores_previous}',
+    f'bertscore_with_tf = {bertscore_scores_previous}',
+    f'bleurt_score_with_tf = {bleurt_score_previous}',
+    f'entailment_scores_with_tf = {entailment_scores_previous}',
+    f'entity_preservation_accuracy_with_tf = {entity_preservation_score_previous}',
     # f'wer_scores_with_tf = {wer_scores_previous}',
     # f'cer_scores_with_tf = {cer_scores_previous}',
     ]
@@ -251,14 +258,12 @@ def eval_model(dataloaders, device, tokenizer, model, output_all_results_path = 
     print(f'[INFO]score results saved in {score_results}')
 
 
-if __name__ == '__main__': 
-    batch_size = 1
+if __name__ == '__main__':
     ''' get args'''
     args = get_config('eval_decoding')
+    batch_size = args['batch_size']
 
-    is_con = args['is_con']
-    is_geo = args['is_geo']
-    is_kl = args['is_kl']
+
     
 
     
@@ -267,20 +272,31 @@ if __name__ == '__main__':
     ''' load training config'''
     with open(args['config_path'], 'r') as f:
         configs = json.load(f)
-    training_config = configs['args']
+    # training_config = configs['args']
+    training_config = configs['pretrained_args']
     module_state_dict_config = configs['module_state_dict']
-    save_name = args['config_path'].split('/')[-1].split('.')[0]
-
+    # save_name = args['config_path'].split('/')[-1].split('.')[0]
+    save_name = args['config_path'].split('/')[-1].split('.')[0] if args['save_name'] is None else args['save_name']
     # subject_choice = training_config['subjects']
     # print(f'[INFO]subjects: {subject_choice}')
+
+    is_con = training_config['is_con']
+    is_geo = training_config['is_geo']
+    is_kl = training_config['is_kl']
+
+
     eeg_type_choice = training_config['eeg_type']
     print(f'[INFO]eeg type: {eeg_type_choice}')
     bands_choice = training_config['eeg_bands']
     print(f'[INFO]using bands: {bands_choice}')
-    
+    subject_choice  = training_config['subjects']
+    print(f'[INFO]subjects: {subject_choice}')
+    test_input      = training_config['test_input']
+    print(f'[INFO]test_input: {test_input}')
+
 
     task_name = training_config['task_name']
-    model_name = training_config['model_name']
+    model_name = configs['args']['model_name']
     if not os.path.exists('./results'):
         os.makedirs('./results')
     if not os.path.exists('./score_results'):
@@ -307,25 +323,6 @@ if __name__ == '__main__':
     # task_name = 'task1_task2_task3'
 
 
-    ''' set up dataloader '''
-    whole_dataset_dicts = []
-    if 'task1' in task_name:
-        dataset_path_task1 = './dataset/ZuCo/task1-SR/pickle/task1-SR-dataset.pickle'
-        with open(dataset_path_task1, 'rb') as handle:
-            whole_dataset_dicts.append(pickle.load(handle))
-    if 'task2' in task_name:
-        dataset_path_task2 = './dataset/ZuCo/task2-NR/pickle/task2-NR-dataset.pickle'
-        with open(dataset_path_task2, 'rb') as handle:
-            whole_dataset_dicts.append(pickle.load(handle))
-    if 'task3' in task_name:
-        dataset_path_task3 = './dataset/ZuCo/task3-TSR/pickle/task3-TSR-dataset.pickle'
-        with open(dataset_path_task3, 'rb') as handle:
-            whole_dataset_dicts.append(pickle.load(handle))
-    if 'taskNRv2' in task_name:
-        dataset_path_taskNRv2 = './dataset/ZuCo/task2-NR-2.0/pickle/task2-NR-2.0-dataset.pickle'
-        with open(dataset_path_taskNRv2, 'rb') as handle:
-            whole_dataset_dicts.append(pickle.load(handle))
-    print()
     
     tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
 
@@ -333,8 +330,22 @@ if __name__ == '__main__':
     dataset_setting = args['dataset_setting']
 
     # test dataset
-    # test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, subject = subject_choice, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting, test_input=test_input)
-    test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
+
+    ''' set up dataloader '''
+    npy_root = "/mnt/Members/speech/jd_data/zuco_decoding_npy/"
+    task_npy_dirs = []
+    if 'task1' in task_name:
+        task_npy_dirs.append(os.path.join(npy_root, "task1-SR"))
+    if 'task2' in task_name:
+        task_npy_dirs.append(os.path.join(npy_root, "task2-NR"))
+    if 'task3' in task_name:
+        task_npy_dirs.append(os.path.join(npy_root, "task3-TSR"))
+    if 'taskNRv2' in task_name:
+        task_npy_dirs.append(os.path.join(npy_root, "task2-NR-2.0"))
+
+    test_set  = ZuCoNpyDataset(task_npy_dirs, phase='test',  tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
+    print()
+    
 
     dataset_sizes = {"test_set":len(test_set)}
     print('[INFO]test_set size: ', len(test_set))
@@ -358,12 +369,17 @@ if __name__ == '__main__':
         denoising_module = EEGNet(
             **denoising_module_statte_dict
         ).to(device)
-        
-    if model_name == 'DConv':
+
+    elif model_name == 'DConv':
         denoising_module = DeepConvNet(
             **denoising_module_statte_dict
         ).to(device)
-    else: 
+
+    elif model_name == 'MLP':
+        denoising_module = MLP(
+            **denoising_module_statte_dict
+        ).to(device)
+    else:
         denoising_module = UNetModel(
             **denoising_module_statte_dict
             ).to(device)
@@ -373,29 +389,20 @@ if __name__ == '__main__':
     autoencoder = AutoencoderKL(
         **autoencoder_state_dict
     ).to(device)
-    if model_name == 'wo_diffusion' or model_name == 'EEGNet':
-        is_diffusion = [False, False]
-    elif model_name == 'DConv':
-        is_diffusion = [False, True]
-    else :
-        is_diffusion = [True, False]
+    if model_name == 'main_diffusion' or model_name == 'full_diffusion':
+        is_diffusion = True
+    else:
+        is_diffusion = False
 
+    is_compare_model = model_name in ('EEGNet', 'DConv', 'MLP')
 
-    pretrained_model_name = training_config['config_path'].split('/')[-1].split('.')[0].split('-')[0]
-    pretrain_opts = BuildOptions(model_name=pretrained_model_name, is_con=is_con, is_geo=is_geo,is_kl=is_kl, is_diffusion=is_diffusion,
+    # pretrained_model_name = configs['args']['config_path'].split('/')[-1].split('.')[0].split('-')[0]
+    pretrained_model_name = training_config['model_name']
+    pretrain_opts = BuildOptions(model_name=pretrained_model_name, is_con=is_con, is_geo=is_geo,is_kl=is_kl, is_diffusion=is_diffusion, is_compare_model=is_compare_model,
                                  autoencoder=autoencoder, denoising_module=denoising_module, pretrained_LM=pretrained_LM, device = device)
     pretrained_module = make_model(pretrain_opts)
 
-    if model_name == 'wo_diffusion' or model_name == 'EEGNet':
-        is_diffusion_delta = [False, False]
-    elif model_name == 'DConv':
-        is_diffusion_delta = [False, True]
-    elif model_name == 'main_diffusion' or model_name == 'full_diffusion':
-        is_diffusion_delta = [True, False]
-    else :
-        is_diffusion_delta = [False, False]
-
-    opts = BuildOptions(model_name=model_name, is_con=is_con, is_geo=is_geo, is_kl=is_kl, device = device,pretrained_module=pretrained_module, is_diffusion=is_diffusion_delta)
+    opts = BuildOptions(model_name=model_name, is_con=is_con, is_geo=is_geo, is_kl=is_kl, device = device,pretrained_module=pretrained_module, is_diffusion=is_diffusion, is_compare_model=is_compare_model)
     model = make_model(opts)
 
     state_dict = torch.load(checkpoint_path)

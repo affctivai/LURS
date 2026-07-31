@@ -27,7 +27,7 @@ def get_config(case):
         parser.add_argument('-cuda', '--cuda', help='specify cuda device name, e.g. cuda:0, cuda:1, etc', default = 'cuda:0')
         parser.add_argument('--save_name', help='save name' ,required=False)
 
-        parser.add_argument('-m', '--model_name', help='choose from DELTA, EEGNet, ...', default = "DELTA", required=True)
+        parser.add_argument('-m', '--model_name', help='choose from pretrain, wo_diffusion_pretrain, DConv_pretrain, EEGNet_pretrain, MLP_pretrain', default = "DELTA", required=True)
         parser.add_argument('--seed', type=int, help='set seed', default=312, required=False)
 
         parser.add_argument('-n', '--noise_scheduler', help='select noise scheduler', default = 'linear' , required=False)
@@ -49,17 +49,22 @@ def get_config(case):
         parser = argparse.ArgumentParser(description='Specify config args for training EEG-To-Text decoder')
 
         parser.add_argument('-conf', '--config_path', help='path to pretrained model config json (full path, e.g. save_model/config/con_unique_sent_linear_1000_pretrain-module.json)', required=True)
-        parser.add_argument('-m', '--model_name', help='choose from DELTA, wo_diffusion, DConv, EEGNet, wo_pretrained, main_diffusion, full_diffusion', default='DELTA', required=True)
+        parser.add_argument('-m', '--model_name', help='choose from DELTA, wo_diffusion, DConv, EEGNet, MLP, wo_pretrained, main_diffusion, full_diffusion', default='DELTA', required=True)
         parser.add_argument('-s', '--save_path', help='checkpoint save path', default='./save_model/checkpoints/DELTA', required=True)
 
         parser.add_argument('-ne1', '--num_epoch_step1', type=int, help='num_epoch_step1', default=20, required=True)
         parser.add_argument('-ne2', '--num_epoch_step2', type=int, help='num_epoch_step2', default=30, required=True)
         parser.add_argument('-lr1', '--learning_rate_step1', type=float, help='learning_rate_step1', default=0.00002, required=True)
-        parser.add_argument('-lr2', '--learning_rate_step2', type=float, help='learning_rate_step2', default=0.00002, required=True)
+        parser.add_argument('-lr2', '--learning_rate_step2', type=float, help='learning_rate_step2', default=0.000005, required=True)
         parser.add_argument('-b', '--batch_size', type=int, help='batch_size', default=32, required=True)
 
         parser.add_argument('-cuda', '--cuda', help='cuda device name, e.g. cuda:0', default='cuda:0')
         parser.add_argument('--save_name', help='save name', required=False)
+
+        parser.add_argument('--apply_lora_to_denoising', help='wrap denoising_module attn1/attn2 with LoRA', action='store_true')
+        parser.add_argument('--lora_r', type=int, help='LoRA rank', default=8, required=False)
+        parser.add_argument('--lora_alpha', type=int, help='LoRA alpha', default=16, required=False)
+        parser.add_argument('--lora_dropout', type=float, help='LoRA dropout', default=0.05, required=False)
 
         args = vars(parser.parse_args())
 
@@ -72,8 +77,10 @@ def get_config(case):
         parser.add_argument('--seed', type=int, help='set seed', default=20, required=False)
         parser.add_argument('-setting', '--dataset_setting', help = 'choose dataset setting from unique_sent, unique_subject', default = 'unique_sent', required=False)
         parser.add_argument('-subj', '--subjects', help='leave-one-subject-out target; omit for ALL', default='ALL', required=False)
+        parser.add_argument('--save_name', help='save name', required=False)
+        parser.add_argument('-b', '--batch_size', type=int, help='batch_size', default=1, required=False)
 
         args = vars(parser.parse_args())
 
-        
+
     return args

@@ -3,8 +3,8 @@
 set -euo pipefail
 
 usage() {
-  echo "Usage: $0 <pretrained_model_name> <model_name> <cuda_id> [subject]"
-  echo "  Example: $0 pretrain_base DELTA 0 unique_sent"
+  echo "Usage: $0 <model_name> <cuda_id> [subject]"
+  echo "  Example: $0 DELTA 0 unique_sent"
   exit 1
 }
 
@@ -25,7 +25,6 @@ fi
 python3 evaluation.py \
     --checkpoint_path save_model/checkpoints/DELTA/best/"$model_name".pt \
     --config_path save_model/config/"$model_name".json \
-    --test_input word-level \
     -setting "$subject" \
-    -cuda cuda:"$cuda"
-
+    -cuda cuda:"$cuda" \
+    -b 32

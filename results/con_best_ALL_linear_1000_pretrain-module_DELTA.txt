@@ -1,0 +1,1704 @@
+target string: Everything its title implies, a standard-issue crime drama spat out from the Tinseltown assembly line.
+predicted string with tf:  about about implies is including man,issue, drama. between of the depthsseltown set..
+predicted string: She was born in New York City and raised in Brooklyn.
+################################################
+
+
+target string: This odd, poetic road movie, spiked by jolts of pop music, pretty much takes place in Morton's ever-watchful gaze -- and it's a tribute to the actress, and to her inventive director, that the journey is such a mesmerizing one.
+predicted string with tf:  is, quirky, trip is which with theingoting of energy culture, is much sums you in the's house-presentful,. and the's a great to the movie who not the the talent,, George she movie is so a joyizing one.
+predicted string: He was born in New York City, the son of an Irish immigrant father and a German-American mother.
+################################################
+
+
+target string: Co-writer/director Jonathan Parker's attempts to fashion a Brazil-like, hyper-real satire fall dreadfully short.
+predicted string with tf: operfounder ofdirector of Dem is film to make a film-inspired film yet-realistic of flatfully short of
+predicted string: He was born in New York City and grew up in Brooklyn.
+################################################
+
+
+target string: An amateurish, quasi-improvised acting exercise shot on ugly digital video.
+predicted string with tf:  interesting actor, un-religiousprovised, performance, through a, video.
+predicted string: He was born in New York City, but grew up in the Bronx.
+################################################
+
+
+target string: ``The Kid Stays in the Picture'' is a great story, terrifically told by the man who wrote it but this Cliff Notes edition is a cheat.
+predicted string with tf: He movie''ays in the House'' is a film movie about andally funny by a young who wrote it. also ish version is a little.
+predicted string: He was born in New York City and raised in Brooklyn.
+################################################
+
+
+target string: A gratingly unfunny groaner littered with zero-dimensional, unlikable characters and hackneyed, threadbare comic setups.
+predicted string with tf:  fewumpy, repetitiveunny filman that. the the redeemedge, unikable characters. aneyed, unbare, lines.
+predicted string: He was a member of the U.S. House of Representatives from 1945 to 1951, serving in both the Republican and Democratic parties.
+################################################
+
+
+target string: While this gentle and affecting melodrama will have luvvies in raptures, it's far too slight and introspective to appeal to anything wider than a niche audience.
+predicted string with tf:  he is, thoughtful filmodrama is be youovable-ies, theures, it's not from easy for toospective for be to the but than the few audience.
+predicted string: He was one of the most important players in the American Revolution.
+################################################
+
+
+target string: Griffin & Co. manage to be spectacularly outrageous.
+predicted string with tf: anted was Co. were the keep aly entertaining,
+predicted string: He was born in New York City.
+################################################
+
+
+target string: A profoundly stupid affair, populating its hackneyed and meanspirited storyline with cardboard characters and performers who value cash above credibility.
+predicted string with tf:  few moving movie, it culture the pagesneyed, unlessited pages with a cut and a who are their over all.
+predicted string: He was also a member of the Republican National Committee.
+################################################
+
+
+target string: Warm Water Under a Red Bridge is a quirky and poignant Japanese film that explores the fascinating connections between women, water, nature, and sexuality.
+predicted string with tf: orsely is the Bridge Sun ( a film, funny film film about is the relationship relationship between the, science, and, and the.
+predicted string: He was born in Brooklyn, New York.
+################################################
+
+
+target string: It isn't that Stealing Harvard is a horrible movie -- if only it were that grand a failure!
+predicted string with tf: 's't a hard. Beauty is a bad movie, it you it were a bad. production.
+predicted string: He was born in Baltimore, Maryland and raised there by his parents.
+################################################
+
+
+target string: It just doesn't have much else... especially in a moral sense.
+predicted string with tf: 's so't work the of to
+predicted string: He was elected to the United States House of Representatives in 1887.
+################################################
+
+
+target string: Those unfamiliar with Mormon traditions may find The Singles Ward occasionally bewildering.
+predicted string with tf:  who with the theology will be it Booking''s amusingering.
+predicted string: He was born in New York City, and grew up in the Bronx.
+################################################
+
+
+target string: Viewed as a comedy, a romance, a fairy tale, or a drama, there's nothing remotely triumphant about this motion picture.
+predicted string with tf:  the from a film of it film, and comedy tale, and a film, it's something to funny about it film picture.
+predicted string: He was a member of the Democratic National Committee (DNC) from 1964 to 1972.
+################################################
+
+
+target string: But the talented cast alone will keep you watching, as will the fight scenes.
+predicted string with tf:  he real and of can not the entertained. and will the performances for.
+predicted string: He was born in New York City and raised in the Bronx.
+################################################
+
+
+target string: It's solid and affecting and exactly as thought-provoking as it should be.
+predicted string with tf: 's a, well. it what it.provoking as the sounds be.
+predicted string: He was elected to the U.S. House of Representatives in 1882 and served until his death in 1915, when he was appointed a United States Senator by President George H. W. Bush.
+################################################
+
+
+target string: Thanks largely to Williams, all the interesting developments are processed in 60 minutes -- the rest is just an overexposed waste of film.
+predicted string with tf:  to to the, who of movies things in possible into a minutes. and longest of a a exerciseageragger, of time time
+predicted string: He was born in New York City and raised in Brooklyn.
+################################################
+
+
+target string: Cantet perfectly captures the hotel lobbies, two-lane highways, and roadside cafes that permeate Vincent's days
+predicted string with tf: atherineal was captures the essence'sies and the-story streets, and the entertainment of makeate the's life.re..ggbourgbourggbourgbourgggggggggg
+predicted string: He is a member of the American Conservative Party (ACP) and served as its chairman from 1993 to 1995.
+################################################
+
+
+target string: An important movie, a reminder of the power of film to move us and to make us examine our values.
+predicted string with tf:  interesting part about but classic of the importance of the to shape people. of make us think our lives.
+predicted string: He is also known for being one of the most outspoken critics of President George W. Bush and his administration, as well as a strong supporter of abortion rights.
+################################################
+
+
+target string: Too much of this well-acted but dangerously slow thriller feels like a preamble to a bigger, more complicated story, one that never materializes.
+predicted string with tf:  bad of a is-meaning, often predictable- is like a moviequelble to a movie, more serious story. one that's quiteizes.
+predicted string: He was a member of the United States Army during World War I.
+################################################
+
+
+target string: A richly imagined and admirably mature work from a gifted director who definitely has something on his mind.
+predicted string with tf:  fewly detailed and wellirably acted film of a man and. has has a to the hands.
+predicted string: He was born in New York City, the son of an African-American father and a French mother.
+################################################
+
+
+target string: The art direction is often exquisite, and the anthropomorphic animal characters are beautifully realized through clever makeup design, leaving one to hope that the eventual DVD release will offer subtitles and the original Italian-language soundtrack.
+predicted string with tf:  film of is simple very, and the musicological animals is are often rendered. the use and and expressive the with wonder that the animal film will will be a. a like audio languagelanguage soundtrack.
+predicted string: He was the son of a German doctor who served in World War II.
+################################################
+
+
+target string: ... Jones, despite a definitely distinctive screen presence, just isn't able to muster for a movie that, its title notwithstanding, should have been a lot nastier if it wanted to fully capitalize on its lead's specific gifts.
+predicted string with tf:  and is who his few not voice presence, is doesn't the to capture the the compelling that's in own suggests, is be been a hit moreastier. it had to be capture on its potential. popularity qualities.
+predicted string: He was elected to the U.S. House of Representatives in 1885, and served one term (1889-1901) as a member of the Republican Party.
+################################################
+
+
+target string: But what's nice is that there's a casual intelligence that permeates the script.
+predicted string with tf:  he's more about that he's a sense, to'sates the film.
+predicted string: He was born in Philadelphia, Pennsylvania and raised in New York City.
+################################################
+
+
+target string: Wedding feels a bit anachronistic.
+predicted string with tf: orseing bells like bit likeachronistic,
+predicted string: He was born in Boston, Massachusetts and grew up in New York City's Lower East Side.
+################################################
+
+
+target string: An action/thriller of the finest kind, evoking memories of Day of the Jackal, The French Connection, and Heat.
+predicted string with tf:  interesting filmadriller film a highest kind. itoking the of the of the Deadal and The Great Revolution, The Thehen
+predicted string: He was born in New York City, the son of a German immigrant father and an American mother.
+################################################
+
+
+target string: This picture is murder by numbers, and as easy to be bored by as your ABC's, despite a few whopping shootouts.
+predicted string with tf:  is is aously proxy. and it such to spot mistaken as as it favorite show. but the good good laughsouts.
+predicted string: He was born in New York City, the son of an Irish immigrant father and a German-American mother.
+################################################
+
+
+target string: Every individual will see the movie through the prism of his or her own beliefs and prejudices, but the one thing most will take away is the sense that peace is possible.
+predicted string with tf:  time is have the difference, the eyes of their own her own personal and experiences. and it film thing that people not away from the sense of he is a.
+predicted string: He was born in New York City and raised in the Bronx, where he graduated from Stuyvesant High School.
+################################################
+
+
+target string: Feels slight, as if it were an extended short, albeit one made by the smartest kids in class.
+predicted string with tf: eling like, but if it's a after version- but a that for a most man in the.
+predicted string: He was born in Philadelphia, Pennsylvania and grew up in New York City.
+################################################
+
+
+target string: The picture doesn't know it's a comedy.
+predicted string with tf:  film is't do how's a movie,
+predicted string: He was born in New York City, the son of an Irish immigrant father and a German mother.
+################################################
+
+
+target string: A classy item by a legend who may have nothing left to prove but still has the chops and drive to show how its done.
+predicted string with tf:  few,, a talented who is have been to to give. his has a ability to the to make it much worth.
+predicted string: He was born in New York City and raised in Brooklyn.
+################################################
+
+
+target string: Starts out mediocre, spirals downward, and thuds to the bottom of the pool with an utterly incompetent conclusion.
+predicted string with tf: uart with as, butaling out, and endsunders into a ground. the barrel. a audible predictable,.
+predicted string: He was elected to the U.S. House of Representatives in 1887 and served until his death in 1917, at which time he became a member of the Democratic National Committee.
+################################################
+
+
+target string: The sort of movie that gives tastelessness a bad rap.
+predicted string with tf:  film of movie that would youeful, a whole name.
+predicted string: He was born in New York City and grew up in the Bronx, where he graduated from Stuyvesant High School.
+################################################
+
+
+target string: Its engaging simplicity is driven by appealing leads.
+predicted string with tf:  most and and a by its characters and
+predicted string: He was born in New York City, but moved to Los Angeles with his family when he was three years old.
+################################################
+
+
+target string: Fans of the TV series will be disappointed, and everyone else will be slightly bored.
+predicted string with tf:  of the film series will remember familiar to but the will will be happy disappointed.
+predicted string: He was the son of a lawyer, and his brother-in-law was George H. W. Bush's Secretary of State from 1963 to 1965.
+################################################
+
+
+target string: It's a head-turner -- thoughtfully written, beautifully read and, finally, deeply humanizing.
+predicted string with tf: 's a greatyscing. a to crafted, well acted, a most, a moving..
+predicted string: He was born in New York City and is of Irish descent.
+################################################
+
+
+target string: Bray is completely at sea; with nothing but a Savage Garden music video on his resume, he has no clue about making a movie.
+predicted string with tf: aldden a un home, he no to the few River to video to his iPod. he's no reason what the a living.
+predicted string: He was born in New York City and grew up in the Bronx.
+################################################
+
+
+target string: It's not a particularly good film, but neither is it a monsterous one.
+predicted string with tf: 's a a bad good movie, but it is it bad bad. one.
+predicted string: He died of a heart attack in his sleep on May 5, 1953.
+################################################
+
+
+target string: Men in Black II achieves ultimate insignificance -- it's the sci-fi comedy spectacle as Whiffle-Ball epic.
+predicted string with tf:  can suits,: a successificance in it's a worst-fi equivalent of that aiplleballBall meets.
+predicted string: He was born in New York City and grew up in Brooklyn, where he graduated from Stuyvesant High School.
+################################################
+
+
+target string: Martyr gets royally screwed and comes back for more.
+predicted string with tf: ine was aally screwed over the out to more.
+predicted string: He was born in New York City, and grew up in the Bronx.
+################################################
+
+
+target string: Everything its title implies, a standard-issue crime drama spat out from the Tinseltown assembly line.
+predicted string with tf:  about about implies is including man,issue, drama. between of the depthsseltown set..
+predicted string: He is a member of the American Academy of Arts and Sciences.
+################################################
+
+
+target string: This odd, poetic road movie, spiked by jolts of pop music, pretty much takes place in Morton's ever-watchful gaze -- and it's a tribute to the actress, and to her inventive director, that the journey is such a mesmerizing one.
+predicted string with tf:  is, quirky, trip is which with theingoting of energy culture, is much sums you in the's house-presentful,. and the's a great to the movie who not the the talent,, George she movie is so a joyizing one.
+predicted string: He was born in the Bronx, New York City.
+################################################
+
+
+target string: Co-writer/director Jonathan Parker's attempts to fashion a Brazil-like, hyper-real satire fall dreadfully short.
+predicted string with tf: operfounder ofdirector of Dem is film to make a film-inspired film yet-realistic of flatfully short of
+predicted string: He served as a United States Marine in World War II, and was awarded the Medal of Honor for his actions.
+################################################
+
+
+target string: An amateurish, quasi-improvised acting exercise shot on ugly digital video.
+predicted string with tf:  interesting actor, un-religiousprovised, performance, through a, video.
+predicted string: He was also a member of the United States Army during World War II, where he served as an aide to General George H. W. Bush.
+################################################
+
+
+target string: ``The Kid Stays in the Picture'' is a great story, terrifically told by the man who wrote it but this Cliff Notes edition is a cheat.
+predicted string with tf: He movie''ays in the House'' is a film movie about andally funny by a young who wrote it. also ish version is a little.
+predicted string: He was born in Brooklyn, New York and grew up in the Bronx.
+################################################
+
+
+target string: A gratingly unfunny groaner littered with zero-dimensional, unlikable characters and hackneyed, threadbare comic setups.
+predicted string with tf:  fewumpy, repetitiveunny filman that. the the redeemedge, unikable characters. aneyed, unbare, lines.
+predicted string: He was born in New York City and raised in the Bronx.
+################################################
+
+
+target string: While this gentle and affecting melodrama will have luvvies in raptures, it's far too slight and introspective to appeal to anything wider than a niche audience.
+predicted string with tf:  he is, thoughtful filmodrama is be youovable-ies, theures, it's not from easy for toospective for be to the but than the few audience.
+predicted string: He was a member of the Democratic National Committee from 1968 to 1972.
+################################################
+
+
+target string: Griffin & Co. manage to be spectacularly outrageous.
+predicted string with tf: anted was Co. were the keep aly entertaining,
+predicted string: He was elected to the U.S. House of Representatives in 1884, and served until his death in 1917.
+################################################
+
+
+target string: A profoundly stupid affair, populating its hackneyed and meanspirited storyline with cardboard characters and performers who value cash above credibility.
+predicted string with tf:  few moving movie, it culture the pagesneyed, unlessited pages with a cut and a who are their over all.
+predicted string: He was a member of the Democratic National Committee from 1964 to 1968.
+################################################
+
+
+target string: Warm Water Under a Red Bridge is a quirky and poignant Japanese film that explores the fascinating connections between women, water, nature, and sexuality.
+predicted string with tf: orsely is the Bridge Sun ( a film, funny film film about is the relationship relationship between the, science, and, and the.
+predicted string: He was born in New York City.
+################################################
+
+
+target string: It isn't that Stealing Harvard is a horrible movie -- if only it were that grand a failure!
+predicted string with tf: 's't a hard. Beauty is a bad movie, it you it were a bad. production.
+predicted string: He was born in New York City and raised in Los Angeles, California.
+################################################
+
+
+target string: It just doesn't have much else... especially in a moral sense.
+predicted string with tf: 's so't work the of to
+predicted string: He was a member of the Democratic National Committee from 1964 to 1968.
+################################################
+
+
+target string: Those unfamiliar with Mormon traditions may find The Singles Ward occasionally bewildering.
+predicted string with tf:  who with the theology will be it Booking''s amusingering.
+predicted string: He is the father of actress Jennifer Aniston, who was married to actor Robert Duvall.
+################################################
+
+
+target string: Viewed as a comedy, a romance, a fairy tale, or a drama, there's nothing remotely triumphant about this motion picture.
+predicted string with tf:  the from a film of it film, and comedy tale, and a film, it's something to funny about it film picture.
+predicted string: He was a member of the U.S. House of Representatives from New York, where he served as an Assistant Majority Whip until his resignation in 2003.
+################################################
+
+
+target string: But the talented cast alone will keep you watching, as will the fight scenes.
+predicted string with tf:  he real and of can not the entertained. and will the performances for.
+predicted string: He graduated from Yale University in 1892 with a Bachelor of Arts degree in English.
+################################################
+
+
+target string: It's solid and affecting and exactly as thought-provoking as it should be.
+predicted string with tf: 's a, well. it what it.provoking as the sounds be.
+predicted string: It's one of the best movies of all time, and it's a must-see if you haven't seen it at least once.
+################################################
+
+
+target string: Thanks largely to Williams, all the interesting developments are processed in 60 minutes -- the rest is just an overexposed waste of film.
+predicted string with tf:  to to the, who of movies things in possible into a minutes. and longest of a a exerciseageragger, of time time
+predicted string: He was born in New York City and raised in Philadelphia, Pennsylvania.
+################################################
+
+
+target string: Cantet perfectly captures the hotel lobbies, two-lane highways, and roadside cafes that permeate Vincent's days
+predicted string with tf: atherineal was captures the essence'sies and the-story streets, and the entertainment of makeate the's life.re..ggbourgbourggbourgbourgggggggggg
+predicted string: He was born in New York City and raised in the Bronx, where he graduated from Stuyvesant High School.
+################################################
+
+
+target string: An important movie, a reminder of the power of film to move us and to make us examine our values.
+predicted string with tf:  interesting part about but classic of the importance of the to shape people. of make us think our lives.
+predicted string: He was a member of the United States Army during World War II.
+################################################
+
+
+target string: Too much of this well-acted but dangerously slow thriller feels like a preamble to a bigger, more complicated story, one that never materializes.
+predicted string with tf:  bad of a is-meaning, often predictable- is like a moviequelble to a movie, more serious story. one that's quiteizes.
+predicted string: He served in the U.S. House of Representatives from 1957 to 1961, and was a member of the Democratic National Committee (DNC) from 1960 to 1963.
+################################################
+
+
+target string: A richly imagined and admirably mature work from a gifted director who definitely has something on his mind.
+predicted string with tf:  fewly detailed and wellirably acted film of a man and. has has a to the hands.
+predicted string: He was born in New York City and raised in the Bronx.
+################################################
+
+
+target string: The art direction is often exquisite, and the anthropomorphic animal characters are beautifully realized through clever makeup design, leaving one to hope that the eventual DVD release will offer subtitles and the original Italian-language soundtrack.
+predicted string with tf:  film of is simple very, and the musicological animals is are often rendered. the use and and expressive the with wonder that the animal film will will be a. a like audio languagelanguage soundtrack.
+predicted string: He was born in New York City, the son of an Irish immigrant father and a German-American mother.
+################################################
+
+
+target string: ... Jones, despite a definitely distinctive screen presence, just isn't able to muster for a movie that, its title notwithstanding, should have been a lot nastier if it wanted to fully capitalize on its lead's specific gifts.
+predicted string with tf:  and is who his few not voice presence, is doesn't the to capture the the compelling that's in own suggests, is be been a hit moreastier. it had to be capture on its potential. popularity qualities.
+predicted string: He was the youngest of five children in his family, and a first-generation American.
+################################################
+
+
+target string: But what's nice is that there's a casual intelligence that permeates the script.
+predicted string with tf:  he's more about that he's a sense, to'sates the film.
+predicted string: He was born in New York City and grew up in the Bronx.
+################################################
+
+
+target string: Wedding feels a bit anachronistic.
+predicted string with tf: orseing bells like bit likeachronistic,
+predicted string: He died at the age of 70, and was buried in St. Louis' Forest Lawn Memorial Park.
+################################################
+
+
+target string: An action/thriller of the finest kind, evoking memories of Day of the Jackal, The French Connection, and Heat.
+predicted string with tf:  interesting filmadriller film a highest kind. itoking the of the of the Deadal and The Great Revolution, The Thehen
+predicted string: The film is directed by John Ford, who was born in New York City and grew up in Brooklyn.
+################################################
+
+
+target string: Every individual will see the movie through the prism of his or her own beliefs and prejudices, but the one thing most will take away is the sense that peace is possible.
+predicted string with tf:  time is have the difference, the eyes of their own her own personal and experiences. and it film thing that people not away from the sense of he is a.
+predicted string: It's a good thing, too, that the movie is so well-acted.
+################################################
+
+
+target string: Feels slight, as if it were an extended short, albeit one made by the smartest kids in class.
+predicted string with tf: eling like, but if it's a after version- but a that for a most man in the.
+predicted string: He was born in New York City and grew up in the Bronx.
+################################################
+
+
+target string: The picture doesn't know it's a comedy.
+predicted string with tf:  film is't do how's a movie,
+predicted string: He was a member of the U.S. House of Representatives from 1967 to 1971, serving as chairman and vice-chairman until his resignation in 1972.
+################################################
+
+
+target string: A classy item by a legend who may have nothing left to prove but still has the chops and drive to show how its done.
+predicted string with tf:  few,, a talented who is have been to to give. his has a ability to the to make it much worth.
+predicted string: He was a member of the United States House of Representatives, where he served from 1967 to 1971.
+################################################
+
+
+target string: Starts out mediocre, spirals downward, and thuds to the bottom of the pool with an utterly incompetent conclusion.
+predicted string with tf: uart with as, butaling out, and endsunders into a ground. the barrel. a audible predictable,.
+predicted string: He was born in New York City, but grew up in St. Louis, Missouri and graduated from the University of Illinois at Urbana-Champaign with a degree in political science.
+################################################
+
+
+target string: The sort of movie that gives tastelessness a bad rap.
+predicted string with tf:  film of movie that would youeful, a whole name.
+predicted string: He was born in New York City, the youngest of five children.
+################################################
+
+
+target string: Its engaging simplicity is driven by appealing leads.
+predicted string with tf:  most and and a by its characters and
+predicted string: He was born and raised in New York City.
+################################################
+
+
+target string: Fans of the TV series will be disappointed, and everyone else will be slightly bored.
+predicted string with tf:  of the film series will remember familiar to but the will will be happy disappointed.
+predicted string: He was born in New York City, and grew up in the Bronx.
+################################################
+
+
+target string: It's a head-turner -- thoughtfully written, beautifully read and, finally, deeply humanizing.
+predicted string with tf: 's a greatyscing. a to crafted, well acted, a most, a moving..
+predicted string: He was born in New York City, the son of an Irish immigrant father and a German-American mother.
+################################################
+
+
+target string: Bray is completely at sea; with nothing but a Savage Garden music video on his resume, he has no clue about making a movie.
+predicted string with tf: aldden a un home, he no to the few River to video to his iPod. he's no reason what the a living.
+predicted string: He was born in London and grew up in England, where his family moved to New York City when he was three years old.
+################################################
+
+
+target string: It's not a particularly good film, but neither is it a monsterous one.
+predicted string with tf: 's a a bad good movie, but it is it bad bad. one.
+predicted string: He is also a member of the U.S. House of Representatives, where he served as chairman from 1995 to 1999.
+################################################
+
+
+target string: Men in Black II achieves ultimate insignificance -- it's the sci-fi comedy spectacle as Whiffle-Ball epic.
+predicted string with tf:  can suits,: a successificance in it's a worst-fi equivalent of that aiplleballBall meets.
+predicted string: He was a member of the U.S. House of Representatives from 1955 to 1962, serving in both the Republican and Democratic parties.
+################################################
+
+
+target string: Martyr gets royally screwed and comes back for more.
+predicted string with tf: ine was aally screwed over the out to more.
+predicted string: He was one of the most influential men in American history, and a leading member of both the Republican Party and the Democratic Party.
+################################################
+
+
+target string: Everything its title implies, a standard-issue crime drama spat out from the Tinseltown assembly line.
+predicted string with tf:  about about implies is including man,issue, drama. between of the depthsseltown set..
+predicted string: He was a member of the Democratic National Committee from 1972 to 1974.
+################################################
+
+
+target string: This odd, poetic road movie, spiked by jolts of pop music, pretty much takes place in Morton's ever-watchful gaze -- and it's a tribute to the actress, and to her inventive director, that the journey is such a mesmerizing one.
+predicted string with tf:  is, quirky, trip is which with theingoting of energy culture, is much sums you in the's house-presentful,. and the's a great to the movie who not the the talent,, George she movie is so a joyizing one.
+predicted string: He was born in New York City and raised in the Bronx, where he graduated from Stuyvesant High School.
+################################################
+
+
+target string: Co-writer/director Jonathan Parker's attempts to fashion a Brazil-like, hyper-real satire fall dreadfully short.
+predicted string with tf: operfounder ofdirector of Dem is film to make a film-inspired film yet-realistic of flatfully short of
+predicted string: He was a member of the Democratic National Committee from 1952 to 1956.
+################################################
+
+
+target string: An amateurish, quasi-improvised acting exercise shot on ugly digital video.
+predicted string with tf:  interesting actor, un-religiousprovised, performance, through a, video.
+predicted string: He was a member of the Democratic National Committee (DNC) from 1964 to 1967.
+################################################
+
+
+target string: ``The Kid Stays in the Picture'' is a great story, terrifically told by the man who wrote it but this Cliff Notes edition is a cheat.
+predicted string with tf: He movie''ays in the House'' is a film movie about andally funny by a young who wrote it. also ish version is a little.
+predicted string: He was born in New York City, but moved to Chicago when he was five years old.
+################################################
+
+
+target string: While this gentle and affecting melodrama will have luvvies in raptures, it's far too slight and introspective to appeal to anything wider than a niche audience.
+predicted string with tf:  he is, thoughtful filmodrama is be youovable-ies, theures, it's not from easy for toospective for be to the but than the few audience.
+predicted string: He was a member of the Democratic National Committee (DNC) from 1972 to 1974.
+################################################
+
+
+target string: Griffin & Co. manage to be spectacularly outrageous.
+predicted string with tf: anted was Co. were the keep aly entertaining,
+predicted string: He graduated from Duke University with a Bachelor of Science degree in history, majoring in political science and philosophy.
+################################################
+
+
+target string: A profoundly stupid affair, populating its hackneyed and meanspirited storyline with cardboard characters and performers who value cash above credibility.
+predicted string with tf:  few moving movie, it culture the pagesneyed, unlessited pages with a cut and a who are their over all.
+predicted string: He graduated from the University of Maryland with a degree in political science.
+################################################
+
+
+target string: Warm Water Under a Red Bridge is a quirky and poignant Japanese film that explores the fascinating connections between women, water, nature, and sexuality.
+predicted string with tf: orsely is the Bridge Sun ( a film, funny film film about is the relationship relationship between the, science, and, and the.
+predicted string: He was one of the first African Americans to become a U.S. Senator, serving from 1885 until his death in 1913.
+################################################
+
+
+target string: It isn't that Stealing Harvard is a horrible movie -- if only it were that grand a failure!
+predicted string with tf: 's't a hard. Beauty is a bad movie, it you it were a bad. production.
+predicted string: He was born in New York City, the youngest of five children.
+################################################
+
+
+target string: It just doesn't have much else... especially in a moral sense.
+predicted string with tf: 's so't work the of to
+predicted string: He served as a U.S. Senator from Massachusetts, and was elected to the United States House of Representatives in 1945.
+################################################
+
+
+target string: Those unfamiliar with Mormon traditions may find The Singles Ward occasionally bewildering.
+predicted string with tf:  who with the theology will be it Booking''s amusingering.
+predicted string: He was born in New York City, the son of an Irish immigrant father and a German-American mother.
+################################################
+
+
+target string: Viewed as a comedy, a romance, a fairy tale, or a drama, there's nothing remotely triumphant about this motion picture.
+predicted string with tf:  the from a film of it film, and comedy tale, and a film, it's something to funny about it film picture.
+predicted string: He is a member of the American Conservative Party.
+################################################
+
+
+target string: But the talented cast alone will keep you watching, as will the fight scenes.
+predicted string with tf:  he real and of can not the entertained. and will the performances for.
+predicted string: He was elected to the United States House of Representatives in 1946.
+################################################
+
+
+target string: It's solid and affecting and exactly as thought-provoking as it should be.
+predicted string with tf: 's a, well. it what it.provoking as the sounds be.
+predicted string: He was a member of the Republican National Committee from 1964 to 1968.
+################################################
+
+
+target string: Thanks largely to Williams, all the interesting developments are processed in 60 minutes -- the rest is just an overexposed waste of film.
+predicted string with tf:  to to the, who of movies things in possible into a minutes. and longest of a a exerciseageragger, of time time
+predicted string: He was elected to the U.S. House of Representatives in 1875, and served until his death in 1895.
+################################################
+
+
+target string: Cantet perfectly captures the hotel lobbies, two-lane highways, and roadside cafes that permeate Vincent's days
+predicted string with tf: atherineal was captures the essence'sies and the-story streets, and the entertainment of makeate the's life.re..ggbourgbourggbourgbourgggggggggg
+predicted string: He was a member of the Democratic National Committee (DNC) and served as its chairman from 1972 to 1976.
+################################################
+
+
+target string: An important movie, a reminder of the power of film to move us and to make us examine our values.
+predicted string with tf:  interesting part about but classic of the importance of the to shape people. of make us think our lives.
+predicted string: He was born in New York City and grew up in the Bronx.
+################################################
+
+
+target string: Too much of this well-acted but dangerously slow thriller feels like a preamble to a bigger, more complicated story, one that never materializes.
+predicted string with tf:  bad of a is-meaning, often predictable- is like a moviequelble to a movie, more serious story. one that's quiteizes.
+predicted string: He was born in New York City, and grew up in the Bronx.
+################################################
+
+
+target string: A richly imagined and admirably mature work from a gifted director who definitely has something on his mind.
+predicted string with tf:  fewly detailed and wellirably acted film of a man and. has has a to the hands.
+predicted string: He was elected to the United States House of Representatives in 1892.
+################################################
+
+
+target string: The art direction is often exquisite, and the anthropomorphic animal characters are beautifully realized through clever makeup design, leaving one to hope that the eventual DVD release will offer subtitles and the original Italian-language soundtrack.
+predicted string with tf:  film of is simple very, and the musicological animals is are often rendered. the use and and expressive the with wonder that the animal film will will be a. a like audio languagelanguage soundtrack.
+predicted string: He was born in New York City, and grew up in Brooklyn.
+################################################
+
+
+target string: ... Jones, despite a definitely distinctive screen presence, just isn't able to muster for a movie that, its title notwithstanding, should have been a lot nastier if it wanted to fully capitalize on its lead's specific gifts.
+predicted string with tf:  and is who his few not voice presence, is doesn't the to capture the the compelling that's in own suggests, is be been a hit moreastier. it had to be capture on its potential. popularity qualities.
+predicted string: He was born in New York City, and grew up in the city's Lower East Side.
+################################################
+
+
+target string: But what's nice is that there's a casual intelligence that permeates the script.
+predicted string with tf:  he's more about that he's a sense, to'sates the film.
+predicted string: He was born in the United States to Irish immigrant parents, who moved to England at the age of six.
+################################################
+
+
+target string: Wedding feels a bit anachronistic.
+predicted string with tf: orseing bells like bit likeachronistic,
+predicted string: He was elected to the U.S. House of Representatives in 1894, and served until his death in 1904.
+################################################
+
+
+target string: An action/thriller of the finest kind, evoking memories of Day of the Jackal, The French Connection, and Heat.
+predicted string with tf:  interesting filmadriller film a highest kind. itoking the of the of the Deadal and The Great Revolution, The Thehen
+predicted string: The film is a beautiful, haunting and moving piece of work that will leave you feeling as if you've been transported back in time to the 1950s.
+################################################
+
+
+target string: This picture is murder by numbers, and as easy to be bored by as your ABC's, despite a few whopping shootouts.
+predicted string with tf:  is is aously proxy. and it such to spot mistaken as as it favorite show. but the good good laughsouts.
+predicted string: He was one of the first African American actors to appear in a major motion picture.
+################################################
+
+
+target string: Every individual will see the movie through the prism of his or her own beliefs and prejudices, but the one thing most will take away is the sense that peace is possible.
+predicted string with tf:  time is have the difference, the eyes of their own her own personal and experiences. and it film thing that people not away from the sense of he is a.
+predicted string: He was born in New York City, but grew up in Westport, Connecticut.
+################################################
+
+
+target string: Feels slight, as if it were an extended short, albeit one made by the smartest kids in class.
+predicted string with tf: eling like, but if it's a after version- but a that for a most man in the.
+predicted string: The film was released in 1953, and is considered one of the most important American films of all time.
+################################################
+
+
+target string: The picture doesn't know it's a comedy.
+predicted string with tf:  film is't do how's a movie,
+predicted string: He was born in St. Louis, Missouri and raised there by his maternal grandparents.
+################################################
+
+
+target string: A classy item by a legend who may have nothing left to prove but still has the chops and drive to show how its done.
+predicted string with tf:  few,, a talented who is have been to to give. his has a ability to the to make it much worth.
+predicted string: He was born in New York City and grew up in the Bronx, where he graduated from Stuyvesant High School.
+################################################
+
+
+target string: Starts out mediocre, spirals downward, and thuds to the bottom of the pool with an utterly incompetent conclusion.
+predicted string with tf: uart with as, butaling out, and endsunders into a ground. the barrel. a audible predictable,.
+predicted string: He died of cancer on July 23, 2015 at the age of 83.
+################################################
+
+
+target string: The sort of movie that gives tastelessness a bad rap.
+predicted string with tf:  film of movie that would youeful, a whole name.
+predicted string: He was born in Philadelphia, Pennsylvania and grew up in New York City's Lower East Side.
+################################################
+
+
+target string: Its engaging simplicity is driven by appealing leads.
+predicted string with tf:  most and and a by its characters and
+predicted string: He was born in New York City, but grew up in the Bronx.
+################################################
+
+
+target string: Fans of the TV series will be disappointed, and everyone else will be slightly bored.
+predicted string with tf:  of the film series will remember familiar to but the will will be happy disappointed.
+predicted string: He was born in New York City, the son of an Irish immigrant father and a French-American mother.
+################################################
+
+
+target string: It's a head-turner -- thoughtfully written, beautifully read and, finally, deeply humanizing.
+predicted string with tf: 's a greatyscing. a to crafted, well acted, a most, a moving..
+predicted string: He was elected to the U.S. House of Representatives in 1892 and served until his death in 1904.
+################################################
+
+
+target string: Bray is completely at sea; with nothing but a Savage Garden music video on his resume, he has no clue about making a movie.
+predicted string with tf: aldden a un home, he no to the few River to video to his iPod. he's no reason what the a living.
+predicted string: He was born in London, England and moved to New York City when he was four years old.
+################################################
+
+
+target string: It's not a particularly good film, but neither is it a monsterous one.
+predicted string with tf: 's a a bad good movie, but it is it bad bad. one.
+predicted string: The film is based on the novel of the same name by William Styron.
+################################################
+
+
+target string: Men in Black II achieves ultimate insignificance -- it's the sci-fi comedy spectacle as Whiffle-Ball epic.
+predicted string with tf:  can suits,: a successificance in it's a worst-fi equivalent of that aiplleballBall meets.
+predicted string: He was elected to the United States House of Representatives in 1884.
+################################################
+
+
+target string: Everything its title implies, a standard-issue crime drama spat out from the Tinseltown assembly line.
+predicted string with tf:  about about implies is including man,issue, drama. between of the depthsseltown set..
+predicted string: He was born in St. Louis, Missouri and grew up on a farm near the city's outskirts.
+################################################
+
+
+target string: This odd, poetic road movie, spiked by jolts of pop music, pretty much takes place in Morton's ever-watchful gaze -- and it's a tribute to the actress, and to her inventive director, that the journey is such a mesmerizing one.
+predicted string with tf:  is, quirky, trip is which with theingoting of energy culture, is much sums you in the's house-presentful,. and the's a great to the movie who not the the talent,, George she movie is so a joyizing one.
+predicted string: He was a member of the U.S. House of Representatives from 1955 to 1959, serving as an aide to President John F. Kennedy and his Chief of Staff George H. W. Bush.
+################################################
+
+
+target string: Co-writer/director Jonathan Parker's attempts to fashion a Brazil-like, hyper-real satire fall dreadfully short.
+predicted string with tf: operfounder ofdirector of Dem is film to make a film-inspired film yet-realistic of flatfully short of
+predicted string: He was born in New York City and grew up in Brooklyn.
+################################################
+
+
+target string: An amateurish, quasi-improvised acting exercise shot on ugly digital video.
+predicted string with tf:  interesting actor, un-religiousprovised, performance, through a, video.
+predicted string: He was born in New York City and raised in the Bronx, where he graduated from Stuyvesant High School.
+################################################
+
+
+target string: A gratingly unfunny groaner littered with zero-dimensional, unlikable characters and hackneyed, threadbare comic setups.
+predicted string with tf:  fewumpy, repetitiveunny filman that. the the redeemedge, unikable characters. aneyed, unbare, lines.
+predicted string: He was born in New York City, the son of a banker and an actress.
+################################################
+
+
+target string: While this gentle and affecting melodrama will have luvvies in raptures, it's far too slight and introspective to appeal to anything wider than a niche audience.
+predicted string with tf:  he is, thoughtful filmodrama is be youovable-ies, theures, it's not from easy for toospective for be to the but than the few audience.
+predicted string: He is also the author of a number of books, including The Great American Novel (1967), which he co-wrote with his father.
+################################################
+
+
+target string: Griffin & Co. manage to be spectacularly outrageous.
+predicted string with tf: anted was Co. were the keep aly entertaining,
+predicted string: He was born in New York City, the son of an Irish immigrant father and a French-American mother.
+################################################
+
+
+target string: A profoundly stupid affair, populating its hackneyed and meanspirited storyline with cardboard characters and performers who value cash above credibility.
+predicted string with tf:  few moving movie, it culture the pagesneyed, unlessited pages with a cut and a who are their over all.
+predicted string: He was born in New York City and raised in Brooklyn.
+################################################
+
+
+target string: Warm Water Under a Red Bridge is a quirky and poignant Japanese film that explores the fascinating connections between women, water, nature, and sexuality.
+predicted string with tf: orsely is the Bridge Sun ( a film, funny film film about is the relationship relationship between the, science, and, and the.
+predicted string: He was born in New York City, the son of a Jewish father and an Irish mother.
+################################################
+
+
+target string: It isn't that Stealing Harvard is a horrible movie -- if only it were that grand a failure!
+predicted string with tf: 's't a hard. Beauty is a bad movie, it you it were a bad. production.
+predicted string: He was born in New York City and grew up in the Bronx, where he graduated from Stuyvesant High School.
+################################################
+
+
+target string: It just doesn't have much else... especially in a moral sense.
+predicted string with tf: 's so't work the of to
+predicted string: He was born in New York City and raised in Brooklyn.
+################################################
+
+
+target string: Those unfamiliar with Mormon traditions may find The Singles Ward occasionally bewildering.
+predicted string with tf:  who with the theology will be it Booking''s amusingering.
+predicted string: He was born in New York City, and grew up in the Bronx.
+################################################
+
+
+target string: Viewed as a comedy, a romance, a fairy tale, or a drama, there's nothing remotely triumphant about this motion picture.
+predicted string with tf:  the from a film of it film, and comedy tale, and a film, it's something to funny about it film picture.
+predicted string: He was one of the best-known American actors of his generation.
+################################################
+
+
+target string: But the talented cast alone will keep you watching, as will the fight scenes.
+predicted string with tf:  he real and of can not the entertained. and will the performances for.
+predicted string: He was born in New York City, the son of an Irish immigrant father and a Polish-American mother.
+################################################
+
+
+target string: It's solid and affecting and exactly as thought-provoking as it should be.
+predicted string with tf: 's a, well. it what it.provoking as the sounds be.
+predicted string: He was a member of the Democratic National Committee (DNC) from 1964 to 1968.
+################################################
+
+
+target string: Thanks largely to Williams, all the interesting developments are processed in 60 minutes -- the rest is just an overexposed waste of film.
+predicted string with tf:  to to the, who of movies things in possible into a minutes. and longest of a a exerciseageragger, of time time
+predicted string: He was born in New York City and grew up in Brooklyn.
+################################################
+
+
+target string: Cantet perfectly captures the hotel lobbies, two-lane highways, and roadside cafes that permeate Vincent's days
+predicted string with tf: atherineal was captures the essence'sies and the-story streets, and the entertainment of makeate the's life.re..ggbourgbourggbourgbourgggggggggg
+predicted string: He was elected to the United States House of Representatives in 1940.
+################################################
+
+
+target string: An important movie, a reminder of the power of film to move us and to make us examine our values.
+predicted string with tf:  interesting part about but classic of the importance of the to shape people. of make us think our lives.
+predicted string: He served as a lieutenant in the U.S. Army during World War II, and was promoted to major general in 1945.
+################################################
+
+
+target string: Too much of this well-acted but dangerously slow thriller feels like a preamble to a bigger, more complicated story, one that never materializes.
+predicted string with tf:  bad of a is-meaning, often predictable- is like a moviequelble to a movie, more serious story. one that's quiteizes.
+predicted string: He was born in London, England and moved to New York City as a child.
+################################################
+
+
+target string: A richly imagined and admirably mature work from a gifted director who definitely has something on his mind.
+predicted string with tf:  fewly detailed and wellirably acted film of a man and. has has a to the hands.
+predicted string: He was also a member of the U.S. House of Representatives, where he served as an assistant to President George H. W. Bush and Secretary of State Henry Kissinger.
+################################################
+
+
+target string: The art direction is often exquisite, and the anthropomorphic animal characters are beautifully realized through clever makeup design, leaving one to hope that the eventual DVD release will offer subtitles and the original Italian-language soundtrack.
+predicted string with tf:  film of is simple very, and the musicological animals is are often rendered. the use and and expressive the with wonder that the animal film will will be a. a like audio languagelanguage soundtrack.
+predicted string: He was born in Boston, Massachusetts and grew up in New York City's Greenwich Village neighborhood.
+################################################
+
+
+target string: But what's nice is that there's a casual intelligence that permeates the script.
+predicted string with tf:  he's more about that he's a sense, to'sates the film.
+predicted string: He was the youngest member of the Republican National Committee (RNC) to be elected president, succeeding George H. W. Bush in 1968.
+################################################
+
+
+target string: Wedding feels a bit anachronistic.
+predicted string with tf: orseing bells like bit likeachronistic,
+predicted string: He is also a member of the American Academy of Arts and Sciences.
+################################################
+
+
+target string: An action/thriller of the finest kind, evoking memories of Day of the Jackal, The French Connection, and Heat.
+predicted string with tf:  interesting filmadriller film a highest kind. itoking the of the of the Deadal and The Great Revolution, The Thehen
+predicted string: He was born in New York City and grew up in Brooklyn.
+################################################
+
+
+target string: This picture is murder by numbers, and as easy to be bored by as your ABC's, despite a few whopping shootouts.
+predicted string with tf:  is is aously proxy. and it such to spot mistaken as as it favorite show. but the good good laughsouts.
+predicted string: He was the son of a Methodist minister, and his brother-in-law was an Episcopal priest.
+################################################
+
+
+target string: Every individual will see the movie through the prism of his or her own beliefs and prejudices, but the one thing most will take away is the sense that peace is possible.
+predicted string with tf:  time is have the difference, the eyes of their own her own personal and experiences. and it film thing that people not away from the sense of he is a.
+predicted string: He was a member of the Democratic National Committee from 1964 to 1968, and served in the U.S. House of Representatives from 1967 to 1971.
+################################################
+
+
+target string: Feels slight, as if it were an extended short, albeit one made by the smartest kids in class.
+predicted string with tf: eling like, but if it's a after version- but a that for a most man in the.
+predicted string: He was born in Brooklyn, New York and grew up in the Bronx.
+################################################
+
+
+target string: The picture doesn't know it's a comedy.
+predicted string with tf:  film is't do how's a movie,
+predicted string: He was born in Philadelphia, Pennsylvania and grew up in New York City's Lower East Side.
+################################################
+
+
+target string: Starts out mediocre, spirals downward, and thuds to the bottom of the pool with an utterly incompetent conclusion.
+predicted string with tf: uart with as, butaling out, and endsunders into a ground. the barrel. a audible predictable,.
+predicted string: He was born in New York City and raised in Brooklyn.
+################################################
+
+
+target string: The sort of movie that gives tastelessness a bad rap.
+predicted string with tf:  film of movie that would youeful, a whole name.
+predicted string: He was born in New York City and raised in the Bronx, where he graduated from Yale University.
+################################################
+
+
+target string: Fans of the TV series will be disappointed, and everyone else will be slightly bored.
+predicted string with tf:  of the film series will remember familiar to but the will will be happy disappointed.
+predicted string: He was elected to the U.S. House of Representatives in 1885, and served until his death in 1917.
+################################################
+
+
+target string: It's a head-turner -- thoughtfully written, beautifully read and, finally, deeply humanizing.
+predicted string with tf: 's a greatyscing. a to crafted, well acted, a most, a moving..
+predicted string: He was born in New York City and raised in Brooklyn.
+################################################
+
+
+target string: Bray is completely at sea; with nothing but a Savage Garden music video on his resume, he has no clue about making a movie.
+predicted string with tf: aldden a un home, he no to the few River to video to his iPod. he's no reason what the a living.
+predicted string: He was born in New York City and raised in Brooklyn.
+################################################
+
+
+target string: It's not a particularly good film, but neither is it a monsterous one.
+predicted string with tf: 's a a bad good movie, but it is it bad bad. one.
+predicted string: The film was nominated for three Academy Awards, including Best Picture and Best Director.
+################################################
+
+
+target string: Men in Black II achieves ultimate insignificance -- it's the sci-fi comedy spectacle as Whiffle-Ball epic.
+predicted string with tf:  can suits,: a successificance in it's a worst-fi equivalent of that aiplleballBall meets.
+predicted string: He was born in New York City, but moved to London with his family when he was four years old.
+################################################
+
+
+target string: Martyr gets royally screwed and comes back for more.
+predicted string with tf: ine was aally screwed over the out to more.
+predicted string: He was born in New York City, the son of a stockbroker and an actress.
+################################################
+
+
+target string: Everything its title implies, a standard-issue crime drama spat out from the Tinseltown assembly line.
+predicted string with tf:  about about implies is including man,issue, drama. between of the depthsseltown set..
+predicted string: He was a member of the Democratic National Committee from 1969 to 1972.
+################################################
+
+
+target string: This odd, poetic road movie, spiked by jolts of pop music, pretty much takes place in Morton's ever-watchful gaze -- and it's a tribute to the actress, and to her inventive director, that the journey is such a mesmerizing one.
+predicted string with tf:  is, quirky, trip is which with theingoting of energy culture, is much sums you in the's house-presentful,. and the's a great to the movie who not the the talent,, George she movie is so a joyizing one.
+predicted string: He was elected to the U.S. House of Representatives in 1884, serving until his death in 1904.
+################################################
+
+
+target string: Co-writer/director Jonathan Parker's attempts to fashion a Brazil-like, hyper-real satire fall dreadfully short.
+predicted string with tf: operfounder ofdirector of Dem is film to make a film-inspired film yet-realistic of flatfully short of
+predicted string: He was born in New York City and grew up in Brooklyn, where he graduated from Yale University.
+################################################
+
+
+target string: An amateurish, quasi-improvised acting exercise shot on ugly digital video.
+predicted string with tf:  interesting actor, un-religiousprovised, performance, through a, video.
+predicted string: He was born in New York City and raised in Brooklyn.
+################################################
+
+
+target string: ``The Kid Stays in the Picture'' is a great story, terrifically told by the man who wrote it but this Cliff Notes edition is a cheat.
+predicted string with tf: He movie''ays in the House'' is a film movie about andally funny by a young who wrote it. also ish version is a little.
+predicted string: He was born in New York City and grew up in Boston, Massachusetts.
+################################################
+
+
+target string: A gratingly unfunny groaner littered with zero-dimensional, unlikable characters and hackneyed, threadbare comic setups.
+predicted string with tf:  fewumpy, repetitiveunny filman that. the the redeemedge, unikable characters. aneyed, unbare, lines.
+predicted string: He was born in New York City and raised in the Bronx.
+################################################
+
+
+target string: While this gentle and affecting melodrama will have luvvies in raptures, it's far too slight and introspective to appeal to anything wider than a niche audience.
+predicted string with tf:  he is, thoughtful filmodrama is be youovable-ies, theures, it's not from easy for toospective for be to the but than the few audience.
+predicted string: He was elected to the U.S. House of Representatives in 1894 and served until his death in 1905.
+################################################
+
+
+target string: Griffin & Co. manage to be spectacularly outrageous.
+predicted string with tf: anted was Co. were the keep aly entertaining,
+predicted string: The movie is based on a novel by John Steinbeck, who was born in New York City and grew up in Greenwich Village.
+################################################
+
+
+target string: A profoundly stupid affair, populating its hackneyed and meanspirited storyline with cardboard characters and performers who value cash above credibility.
+predicted string with tf:  few moving movie, it culture the pagesneyed, unlessited pages with a cut and a who are their over all.
+predicted string: He was a member of the U.S. House of Representatives from 1894 to 1895, serving as an aide to President George H. W. Bush and Secretary of State William Henry Harrison.
+################################################
+
+
+target string: Warm Water Under a Red Bridge is a quirky and poignant Japanese film that explores the fascinating connections between women, water, nature, and sexuality.
+predicted string with tf: orsely is the Bridge Sun ( a film, funny film film about is the relationship relationship between the, science, and, and the.
+predicted string: He was born in New York City and raised in Brooklyn, where he graduated from Stuyvesant High School.
+################################################
+
+
+target string: It isn't that Stealing Harvard is a horrible movie -- if only it were that grand a failure!
+predicted string with tf: 's't a hard. Beauty is a bad movie, it you it were a bad. production.
+predicted string: He was born in New York City, the son of a doctor and an actress.
+################################################
+
+
+target string: It just doesn't have much else... especially in a moral sense.
+predicted string with tf: 's so't work the of to
+predicted string: He was born in the United States, but moved to England as a child.
+################################################
+
+
+target string: Those unfamiliar with Mormon traditions may find The Singles Ward occasionally bewildering.
+predicted string with tf:  who with the theology will be it Booking''s amusingering.
+predicted string: He was born in New York City and grew up in Brooklyn, where he graduated from Yale University with a degree in political science.
+################################################
+
+
+target string: Viewed as a comedy, a romance, a fairy tale, or a drama, there's nothing remotely triumphant about this motion picture.
+predicted string with tf:  the from a film of it film, and comedy tale, and a film, it's something to funny about it film picture.
+predicted string: He was born in New York City and grew up in Brooklyn.
+################################################
+
+
+target string: But the talented cast alone will keep you watching, as will the fight scenes.
+predicted string with tf:  he real and of can not the entertained. and will the performances for.
+predicted string: He was born in Boston, Massachusetts and grew up in New York City.
+################################################
+
+
+target string: It's solid and affecting and exactly as thought-provoking as it should be.
+predicted string with tf: 's a, well. it what it.provoking as the sounds be.
+predicted string: He is married to the former actress Susan Sarandon, with whom he has three children.
+################################################
+
+
+target string: Thanks largely to Williams, all the interesting developments are processed in 60 minutes -- the rest is just an overexposed waste of film.
+predicted string with tf:  to to the, who of movies things in possible into a minutes. and longest of a a exerciseageragger, of time time
+predicted string: He was born in the Bronx, New York.
+################################################
+
+
+target string: Cantet perfectly captures the hotel lobbies, two-lane highways, and roadside cafes that permeate Vincent's days
+predicted string with tf: atherineal was captures the essence'sies and the-story streets, and the entertainment of makeate the's life.re..ggbourgbourggbourgbourgggggggggg
+predicted string: He was born in New York City, but moved to Los Angeles when he was three years old.
+################################################
+
+
+target string: An important movie, a reminder of the power of film to move us and to make us examine our values.
+predicted string with tf:  interesting part about but classic of the importance of the to shape people. of make us think our lives.
+predicted string: He is also the author of a number of books, including The Secret Life of Walter Mitty.
+################################################
+
+
+target string: Too much of this well-acted but dangerously slow thriller feels like a preamble to a bigger, more complicated story, one that never materializes.
+predicted string with tf:  bad of a is-meaning, often predictable- is like a moviequelble to a movie, more serious story. one that's quiteizes.
+predicted string: It's been a long time since we've had an American presidential candidate of this caliber, and it's about time.
+################################################
+
+
+target string: A richly imagined and admirably mature work from a gifted director who definitely has something on his mind.
+predicted string with tf:  fewly detailed and wellirably acted film of a man and. has has a to the hands.
+predicted string: He was born in New York City and raised in Brooklyn.
+################################################
+
+
+target string: The art direction is often exquisite, and the anthropomorphic animal characters are beautifully realized through clever makeup design, leaving one to hope that the eventual DVD release will offer subtitles and the original Italian-language soundtrack.
+predicted string with tf:  film of is simple very, and the musicological animals is are often rendered. the use and and expressive the with wonder that the animal film will will be a. a like audio languagelanguage soundtrack.
+predicted string: He was born in Philadelphia, Pennsylvania to a Jewish father and an Irish mother.
+################################################
+
+
+target string: ... Jones, despite a definitely distinctive screen presence, just isn't able to muster for a movie that, its title notwithstanding, should have been a lot nastier if it wanted to fully capitalize on its lead's specific gifts.
+predicted string with tf:  and is who his few not voice presence, is doesn't the to capture the the compelling that's in own suggests, is be been a hit moreastier. it had to be capture on its potential. popularity qualities.
+predicted string: He was born in Boston, Massachusetts and raised there by his parents.
+################################################
+
+
+target string: But what's nice is that there's a casual intelligence that permeates the script.
+predicted string with tf:  he's more about that he's a sense, to'sates the film.
+predicted string: He was born in New York City, but moved to Boston with his family when he was three years old.
+################################################
+
+
+target string: Wedding feels a bit anachronistic.
+predicted string with tf: orseing bells like bit likeachronistic,
+predicted string: He was born in New York City.
+################################################
+
+
+target string: An action/thriller of the finest kind, evoking memories of Day of the Jackal, The French Connection, and Heat.
+predicted string with tf:  interesting filmadriller film a highest kind. itoking the of the of the Deadal and The Great Revolution, The Thehen
+predicted string: It's a good movie, but it's not the kind of thing that makes you fall in love with its characters.
+################################################
+
+
+target string: This picture is murder by numbers, and as easy to be bored by as your ABC's, despite a few whopping shootouts.
+predicted string with tf:  is is aously proxy. and it such to spot mistaken as as it favorite show. but the good good laughsouts.
+predicted string: He was born in New York City and raised in the Bronx.
+################################################
+
+
+target string: Every individual will see the movie through the prism of his or her own beliefs and prejudices, but the one thing most will take away is the sense that peace is possible.
+predicted string with tf:  time is have the difference, the eyes of their own her own personal and experiences. and it film thing that people not away from the sense of he is a.
+predicted string: He was born in New York City and graduated from Yale University, where he earned a bachelor's degree in political science.
+################################################
+
+
+target string: Feels slight, as if it were an extended short, albeit one made by the smartest kids in class.
+predicted string with tf: eling like, but if it's a after version- but a that for a most man in the.
+predicted string: He was born in New York City and grew up in Brooklyn, where he attended Stuyvesant High School.
+################################################
+
+
+target string: The picture doesn't know it's a comedy.
+predicted string with tf:  film is't do how's a movie,
+predicted string: He was born in Chicago, Illinois.
+################################################
+
+
+target string: A classy item by a legend who may have nothing left to prove but still has the chops and drive to show how its done.
+predicted string with tf:  few,, a talented who is have been to to give. his has a ability to the to make it much worth.
+predicted string: He was born in Newark, New Jersey.
+################################################
+
+
+target string: Starts out mediocre, spirals downward, and thuds to the bottom of the pool with an utterly incompetent conclusion.
+predicted string with tf: uart with as, butaling out, and endsunders into a ground. the barrel. a audible predictable,.
+predicted string: He was born in Los Angeles, California and grew up in the San Fernando Valley.
+################################################
+
+
+target string: The sort of movie that gives tastelessness a bad rap.
+predicted string with tf:  film of movie that would youeful, a whole name.
+predicted string: He was born in New York City and raised in Brooklyn, but moved to Los Angeles with his family when he was three years old.
+################################################
+
+
+target string: Its engaging simplicity is driven by appealing leads.
+predicted string with tf:  most and and a by its characters and
+predicted string: He was born in New York City, and raised in Westchester County.
+################################################
+
+
+target string: Fans of the TV series will be disappointed, and everyone else will be slightly bored.
+predicted string with tf:  of the film series will remember familiar to but the will will be happy disappointed.
+predicted string: She was born in New York City and grew up in the Bronx.
+################################################
+
+
+target string: It's a head-turner -- thoughtfully written, beautifully read and, finally, deeply humanizing.
+predicted string with tf: 's a greatyscing. a to crafted, well acted, a most, a moving..
+predicted string: He died of a heart attack at the age of 58.
+################################################
+
+
+target string: Bray is completely at sea; with nothing but a Savage Garden music video on his resume, he has no clue about making a movie.
+predicted string with tf: aldden a un home, he no to the few River to video to his iPod. he's no reason what the a living.
+predicted string: He was born in St. Louis, Missouri and graduated from the University of Illinois at Urbana-Champaign with a degree in political science.
+################################################
+
+
+target string: It's not a particularly good film, but neither is it a monsterous one.
+predicted string with tf: 's a a bad good movie, but it is it bad bad. one.
+predicted string: He is the youngest of five children, all born to parents who had two sons and a daughter.
+################################################
+
+
+target string: Men in Black II achieves ultimate insignificance -- it's the sci-fi comedy spectacle as Whiffle-Ball epic.
+predicted string with tf:  can suits,: a successificance in it's a worst-fi equivalent of that aiplleballBall meets.
+predicted string: He was a member of the Democratic National Committee (DNC) from 1972 to 1976.
+################################################
+
+
+target string: Martyr gets royally screwed and comes back for more.
+predicted string with tf: ine was aally screwed over the out to more.
+predicted string: He graduated from Yale with a degree in political science, and went on to serve as an associate professor at the University of Chicago Law School.
+################################################
+
+
+target string: Everything its title implies, a standard-issue crime drama spat out from the Tinseltown assembly line.
+predicted string with tf:  about about implies is including man,issue, drama. between of the depthsseltown set..
+predicted string: He was born in New York City and grew up in Brooklyn, where he graduated from Stuyvesant High School.
+################################################
+
+
+target string: This odd, poetic road movie, spiked by jolts of pop music, pretty much takes place in Morton's ever-watchful gaze -- and it's a tribute to the actress, and to her inventive director, that the journey is such a mesmerizing one.
+predicted string with tf:  is, quirky, trip is which with theingoting of energy culture, is much sums you in the's house-presentful,. and the's a great to the movie who not the the talent,, George she movie is so a joyizing one.
+predicted string: He was born in New York City and raised in the Bronx.
+################################################
+
+
+target string: Co-writer/director Jonathan Parker's attempts to fashion a Brazil-like, hyper-real satire fall dreadfully short.
+predicted string with tf: operfounder ofdirector of Dem is film to make a film-inspired film yet-realistic of flatfully short of
+predicted string: He was a member of the Democratic National Committee (DNC) from 1952 to 1955.
+################################################
+
+
+target string: An amateurish, quasi-improvised acting exercise shot on ugly digital video.
+predicted string with tf:  interesting actor, un-religiousprovised, performance, through a, video.
+predicted string: He was born in New York City and grew up in the Bronx.
+################################################
+
+
+target string: ``The Kid Stays in the Picture'' is a great story, terrifically told by the man who wrote it but this Cliff Notes edition is a cheat.
+predicted string with tf: He movie''ays in the House'' is a film movie about andally funny by a young who wrote it. also ish version is a little.
+predicted string: He was born in New York City, the son of a doctor and an actress.
+################################################
+
+
+target string: A gratingly unfunny groaner littered with zero-dimensional, unlikable characters and hackneyed, threadbare comic setups.
+predicted string with tf:  fewumpy, repetitiveunny filman that. the the redeemedge, unikable characters. aneyed, unbare, lines.
+predicted string: He was born in New York City and raised in Brooklyn.
+################################################
+
+
+target string: While this gentle and affecting melodrama will have luvvies in raptures, it's far too slight and introspective to appeal to anything wider than a niche audience.
+predicted string with tf:  he is, thoughtful filmodrama is be youovable-ies, theures, it's not from easy for toospective for be to the but than the few audience.
+predicted string: He was born in New York City and grew up in the Bronx, where he graduated from Stuyvesant High School.
+################################################
+
+
+target string: Griffin & Co. manage to be spectacularly outrageous.
+predicted string with tf: anted was Co. were the keep aly entertaining,
+predicted string: He was born in New York City, and grew up in the Bronx.
+################################################
+
+
+target string: A profoundly stupid affair, populating its hackneyed and meanspirited storyline with cardboard characters and performers who value cash above credibility.
+predicted string with tf:  few moving movie, it culture the pagesneyed, unlessited pages with a cut and a who are their over all.
+predicted string: He was elected to the U.S. House of Representatives in 1946 and served until his death in 1953.
+################################################
+
+
+target string: Warm Water Under a Red Bridge is a quirky and poignant Japanese film that explores the fascinating connections between women, water, nature, and sexuality.
+predicted string with tf: orsely is the Bridge Sun ( a film, funny film film about is the relationship relationship between the, science, and, and the.
+predicted string: He was born in New York City, the son of a Polish immigrant father and an American mother.
+################################################
+
+
+target string: It isn't that Stealing Harvard is a horrible movie -- if only it were that grand a failure!
+predicted string with tf: 's't a hard. Beauty is a bad movie, it you it were a bad. production.
+predicted string: He was born in New York City and raised in Brooklyn.
+################################################
+
+
+target string: It just doesn't have much else... especially in a moral sense.
+predicted string with tf: 's so't work the of to
+predicted string: He was a member of the U.S. House of Representatives from 1945 to 1952, serving in both the Republican and Democratic parties.
+################################################
+
+
+target string: Those unfamiliar with Mormon traditions may find The Singles Ward occasionally bewildering.
+predicted string with tf:  who with the theology will be it Booking''s amusingering.
+predicted string: He was elected to the U.S. House of Representatives in 1892 and served until his death in 1898.
+################################################
+
+
+target string: Viewed as a comedy, a romance, a fairy tale, or a drama, there's nothing remotely triumphant about this motion picture.
+predicted string with tf:  the from a film of it film, and comedy tale, and a film, it's something to funny about it film picture.
+predicted string: He was born in New York City, the son of a doctor and an actress.
+################################################
+
+
+target string: But the talented cast alone will keep you watching, as will the fight scenes.
+predicted string with tf:  he real and of can not the entertained. and will the performances for.
+predicted string: She was born in New York City and grew up in the Bronx, where she graduated from Stuyvesant High School.
+################################################
+
+
+target string: It's solid and affecting and exactly as thought-provoking as it should be.
+predicted string with tf: 's a, well. it what it.provoking as the sounds be.
+predicted string: He was a member of the U.S. House of Representatives from 1875 to 1881, and served in the United States Navy during World War II.
+################################################
+
+
+target string: Thanks largely to Williams, all the interesting developments are processed in 60 minutes -- the rest is just an overexposed waste of film.
+predicted string with tf:  to to the, who of movies things in possible into a minutes. and longest of a a exerciseageragger, of time time
+predicted string: He was born in New York City, the son of a banker and an actress.
+################################################
+
+
+target string: Cantet perfectly captures the hotel lobbies, two-lane highways, and roadside cafes that permeate Vincent's days
+predicted string with tf: atherineal was captures the essence'sies and the-story streets, and the entertainment of makeate the's life.re..ggbourgbourggbourgbourgggggggggg
+predicted string: He was born in New York City and raised in the Bronx.
+################################################
+
+
+target string: An important movie, a reminder of the power of film to move us and to make us examine our values.
+predicted string with tf:  interesting part about but classic of the importance of the to shape people. of make us think our lives.
+predicted string: He was a member of the U.S. House of Representatives from 1967 to 1969, serving as Majority Leader in the 114th Congress and Secretary of State from 1971 to 1973.
+################################################
+
+
+target string: Too much of this well-acted but dangerously slow thriller feels like a preamble to a bigger, more complicated story, one that never materializes.
+predicted string with tf:  bad of a is-meaning, often predictable- is like a moviequelble to a movie, more serious story. one that's quiteizes.
+predicted string: He is the son of George W. Bush, President of the United States from 1953 to 1961, and his wife Jacqueline Kennedy Onassis.
+################################################
+
+
+target string: A richly imagined and admirably mature work from a gifted director who definitely has something on his mind.
+predicted string with tf:  fewly detailed and wellirably acted film of a man and. has has a to the hands.
+predicted string: In the 1950s and 60s, he was a member of the Democratic National Committee (DNC).
+################################################
+
+
+target string: The art direction is often exquisite, and the anthropomorphic animal characters are beautifully realized through clever makeup design, leaving one to hope that the eventual DVD release will offer subtitles and the original Italian-language soundtrack.
+predicted string with tf:  film of is simple very, and the musicological animals is are often rendered. the use and and expressive the with wonder that the animal film will will be a. a like audio languagelanguage soundtrack.
+predicted string: He was born in New York City, the son of an Irish immigrant father and a German-American mother.
+################################################
+
+
+target string: ... Jones, despite a definitely distinctive screen presence, just isn't able to muster for a movie that, its title notwithstanding, should have been a lot nastier if it wanted to fully capitalize on its lead's specific gifts.
+predicted string with tf:  and is who his few not voice presence, is doesn't the to capture the the compelling that's in own suggests, is be been a hit moreastier. it had to be capture on its potential. popularity qualities.
+predicted string: He is the son of George W. Bush's Secretary of State Henry Kissinger and his first wife, Eleanor Roosevelt.
+################################################
+
+
+target string: But what's nice is that there's a casual intelligence that permeates the script.
+predicted string with tf:  he's more about that he's a sense, to'sates the film.
+predicted string: He was born in Brooklyn, New York.
+################################################
+
+
+target string: Every individual will see the movie through the prism of his or her own beliefs and prejudices, but the one thing most will take away is the sense that peace is possible.
+predicted string with tf:  time is have the difference, the eyes of their own her own personal and experiences. and it film thing that people not away from the sense of he is a.
+predicted string: He was also a member of the Republican National Committee.
+################################################
+
+
+target string: Feels slight, as if it were an extended short, albeit one made by the smartest kids in class.
+predicted string with tf: eling like, but if it's a after version- but a that for a most man in the.
+predicted string: He is the father of actress Shailene Woodley, who was married to actor John Travolta.
+################################################
+
+
+target string: The picture doesn't know it's a comedy.
+predicted string with tf:  film is't do how's a movie,
+predicted string: He was the son of a minister and an actress.
+################################################
+
+
+target string: Starts out mediocre, spirals downward, and thuds to the bottom of the pool with an utterly incompetent conclusion.
+predicted string with tf: uart with as, butaling out, and endsunders into a ground. the barrel. a audible predictable,.
+predicted string: He was born in New York City and graduated from Yale University, where he majored in English.
+################################################
+
+
+target string: The sort of movie that gives tastelessness a bad rap.
+predicted string with tf:  film of movie that would youeful, a whole name.
+predicted string: He was born in New York City and raised there by his parents.
+################################################
+
+
+target string: Its engaging simplicity is driven by appealing leads.
+predicted string with tf:  most and and a by its characters and
+predicted string: He was born and raised in New York City, where he graduated from Yale University with a degree in political science.
+################################################
+
+
+target string: Everything its title implies, a standard-issue crime drama spat out from the Tinseltown assembly line.
+predicted string with tf:  about about implies is including man,issue, drama. between of the depthsseltown set..
+predicted string: He was born in New York City, the son of an Irish immigrant father and a French-American mother.
+################################################
+
+
+target string: Co-writer/director Jonathan Parker's attempts to fashion a Brazil-like, hyper-real satire fall dreadfully short.
+predicted string with tf: operfounder ofdirector of Dem is film to make a film-inspired film yet-realistic of flatfully short of
+predicted string: He was a member of the U.S. House of Representatives from 1943 to 1946, and served as an aide to President George H.W. Bush (1941-1945).
+################################################
+
+
+target string: An amateurish, quasi-improvised acting exercise shot on ugly digital video.
+predicted string with tf:  interesting actor, un-religiousprovised, performance, through a, video.
+predicted string: He was born in New York City and raised in Brooklyn.
+################################################
+
+
+target string: ``The Kid Stays in the Picture'' is a great story, terrifically told by the man who wrote it but this Cliff Notes edition is a cheat.
+predicted string with tf: He movie''ays in the House'' is a film movie about andally funny by a young who wrote it. also ish version is a little.
+predicted string: He was elected to the United States House of Representatives in 1894.
+################################################
+
+
+target string: A gratingly unfunny groaner littered with zero-dimensional, unlikable characters and hackneyed, threadbare comic setups.
+predicted string with tf:  fewumpy, repetitiveunny filman that. the the redeemedge, unikable characters. aneyed, unbare, lines.
+predicted string: He was born in New York City, and is of Irish descent.
+################################################
+
+
+target string: While this gentle and affecting melodrama will have luvvies in raptures, it's far too slight and introspective to appeal to anything wider than a niche audience.
+predicted string with tf:  he is, thoughtful filmodrama is be youovable-ies, theures, it's not from easy for toospective for be to the but than the few audience.
+predicted string: He graduated from the University of Michigan with a bachelor's degree in political science, majoring in history.
+################################################
+
+
+target string: Griffin & Co. manage to be spectacularly outrageous.
+predicted string with tf: anted was Co. were the keep aly entertaining,
+predicted string: He was born in the Bronx, New York.
+################################################
+
+
+target string: A profoundly stupid affair, populating its hackneyed and meanspirited storyline with cardboard characters and performers who value cash above credibility.
+predicted string with tf:  few moving movie, it culture the pagesneyed, unlessited pages with a cut and a who are their over all.
+predicted string: He was also a member of the U.S. Army during World War II, and served as an aide to General George S. Patton (retired).
+################################################
+
+
+target string: It isn't that Stealing Harvard is a horrible movie -- if only it were that grand a failure!
+predicted string with tf: 's't a hard. Beauty is a bad movie, it you it were a bad. production.
+predicted string: He was married to his first wife, Eunice Kennedy Shriver, who died of cancer at the age of 84.
+################################################
+
+
+target string: It just doesn't have much else... especially in a moral sense.
+predicted string with tf: 's so't work the of to
+predicted string: He was elected to the U.S. House of Representatives in 1885 and served until his death in 1917.
+################################################
+
+
+target string: Those unfamiliar with Mormon traditions may find The Singles Ward occasionally bewildering.
+predicted string with tf:  who with the theology will be it Booking''s amusingering.
+predicted string: He was born in New York City, the son of an Irish immigrant father and a French-American mother.
+################################################
+
+
+target string: Viewed as a comedy, a romance, a fairy tale, or a drama, there's nothing remotely triumphant about this motion picture.
+predicted string with tf:  the from a film of it film, and comedy tale, and a film, it's something to funny about it film picture.
+predicted string: He was born in New York City and raised in the Bronx.
+################################################
+
+
+target string: But the talented cast alone will keep you watching, as will the fight scenes.
+predicted string with tf:  he real and of can not the entertained. and will the performances for.
+predicted string: He was the son of an American soldier and a French woman, both of whom were born in France during the Franco-Prussian War.
+################################################
+
+
+target string: It's solid and affecting and exactly as thought-provoking as it should be.
+predicted string with tf: 's a, well. it what it.provoking as the sounds be.
+predicted string: He was born in New York City and moved to Los Angeles, where he graduated from the University of California at Santa Barbara.
+################################################
+
+
+target string: Cantet perfectly captures the hotel lobbies, two-lane highways, and roadside cafes that permeate Vincent's days
+predicted string with tf: atherineal was captures the essence'sies and the-story streets, and the entertainment of makeate the's life.re..ggbourgbourggbourgbourgggggggggg
+predicted string: It's hard to find a better way to describe what it's like to live in the city of New York City.
+################################################
+
+
+target string: An important movie, a reminder of the power of film to move us and to make us examine our values.
+predicted string with tf:  interesting part about but classic of the importance of the to shape people. of make us think our lives.
+predicted string: He was born in New York City and grew up in Philadelphia, Pennsylvania.
+################################################
+
+
+target string: Too much of this well-acted but dangerously slow thriller feels like a preamble to a bigger, more complicated story, one that never materializes.
+predicted string with tf:  bad of a is-meaning, often predictable- is like a moviequelble to a movie, more serious story. one that's quiteizes.
+predicted string: He was born in New York City, the son of an Irish immigrant father and a French-American mother.
+################################################
+
+
+target string: A richly imagined and admirably mature work from a gifted director who definitely has something on his mind.
+predicted string with tf:  fewly detailed and wellirably acted film of a man and. has has a to the hands.
+predicted string: He was a member of the United States House of Representatives from 1955 to 1959.
+################################################
+
+
+target string: The art direction is often exquisite, and the anthropomorphic animal characters are beautifully realized through clever makeup design, leaving one to hope that the eventual DVD release will offer subtitles and the original Italian-language soundtrack.
+predicted string with tf:  film of is simple very, and the musicological animals is are often rendered. the use and and expressive the with wonder that the animal film will will be a. a like audio languagelanguage soundtrack.
+predicted string: He was born in New York City and grew up in the Bronx.
+################################################
+
+
+target string: ... Jones, despite a definitely distinctive screen presence, just isn't able to muster for a movie that, its title notwithstanding, should have been a lot nastier if it wanted to fully capitalize on its lead's specific gifts.
+predicted string with tf:  and is who his few not voice presence, is doesn't the to capture the the compelling that's in own suggests, is be been a hit moreastier. it had to be capture on its potential. popularity qualities.
+predicted string: He was born in New York City, the son of a doctor and an actress.
+################################################
+
+
+target string: But what's nice is that there's a casual intelligence that permeates the script.
+predicted string with tf:  he's more about that he's a sense, to'sates the film.
+predicted string: He was born in New York City, the son of a stockbroker and his wife.
+################################################
+
+
+target string: Wedding feels a bit anachronistic.
+predicted string with tf: orseing bells like bit likeachronistic,
+predicted string: He was born in New York City.
+################################################
+
+
+target string: This picture is murder by numbers, and as easy to be bored by as your ABC's, despite a few whopping shootouts.
+predicted string with tf:  is is aously proxy. and it such to spot mistaken as as it favorite show. but the good good laughsouts.
+predicted string: He was born in Philadelphia, Pennsylvania and grew up in the suburbs of New York City.
+################################################
+
+
+target string: Every individual will see the movie through the prism of his or her own beliefs and prejudices, but the one thing most will take away is the sense that peace is possible.
+predicted string with tf:  time is have the difference, the eyes of their own her own personal and experiences. and it film thing that people not away from the sense of he is a.
+predicted string: He was born in Boston, Massachusetts and graduated from Harvard University with a degree in history.
+################################################
+
+
+target string: Feels slight, as if it were an extended short, albeit one made by the smartest kids in class.
+predicted string with tf: eling like, but if it's a after version- but a that for a most man in the.
+predicted string: He was born in Long Island, New York and graduated from Yale University with a degree in history.
+################################################
+
+
+target string: The picture doesn't know it's a comedy.
+predicted string with tf:  film is't do how's a movie,
+predicted string: He is the father of actress Rosemary Clooney, and grandfather of actor Daniel Day-Lewis.
+################################################
+
+
+target string: A classy item by a legend who may have nothing left to prove but still has the chops and drive to show how its done.
+predicted string with tf:  few,, a talented who is have been to to give. his has a ability to the to make it much worth.
+predicted string: He was elected to the United States House of Representatives in 1892.
+################################################
+
+
+target string: Starts out mediocre, spirals downward, and thuds to the bottom of the pool with an utterly incompetent conclusion.
+predicted string with tf: uart with as, butaling out, and endsunders into a ground. the barrel. a audible predictable,.
+predicted string: He was born in New York City, the son of a doctor and a nurse.
+################################################
+
+
+target string: The sort of movie that gives tastelessness a bad rap.
+predicted string with tf:  film of movie that would youeful, a whole name.
+predicted string: He is the son of a Revolutionary War general, General George S. Patton, and his wife, Mary Jane (née Huxley), who served as an aide to President John F. Kennedy during World War II.
+################################################
+
+
+target string: Its engaging simplicity is driven by appealing leads.
+predicted string with tf:  most and and a by its characters and
+predicted string: He was born in Haverhill, Massachusetts and grew up in New York City's Greenwich Village neighborhood.
+################################################
+
+
+target string: Fans of the TV series will be disappointed, and everyone else will be slightly bored.
+predicted string with tf:  of the film series will remember familiar to but the will will be happy disappointed.
+predicted string: He was elected to the U.S. House of Representatives in 1892 and served until his death in 1904.
+################################################
+
+
+target string: It's a head-turner -- thoughtfully written, beautifully read and, finally, deeply humanizing.
+predicted string with tf: 's a greatyscing. a to crafted, well acted, a most, a moving..
+predicted string: He served in the U.S. Navy during World War II, where he was a member of the 101st Airborne Division.
+################################################
+
+
+target string: Men in Black II achieves ultimate insignificance -- it's the sci-fi comedy spectacle as Whiffle-Ball epic.
+predicted string with tf:  can suits,: a successificance in it's a worst-fi equivalent of that aiplleballBall meets.
+predicted string: He was born in New York City, the son of an Irish immigrant father and a French-American mother.
+################################################
+
+
+target string: Martyr gets royally screwed and comes back for more.
+predicted string with tf: ine was aally screwed over the out to more.
+predicted string: The film is a dark comedy, but it's also one of the funniest and most entertaining things I've ever seen in my life.
+################################################
+
+
+target string: Everything its title implies, a standard-issue crime drama spat out from the Tinseltown assembly line.
+predicted string with tf:  about about implies is including man,issue, drama. between of the depthsseltown set..
+predicted string: He was the son of a lawyer and his wife, who had moved to New York City from London.
+################################################
+
+
+target string: This odd, poetic road movie, spiked by jolts of pop music, pretty much takes place in Morton's ever-watchful gaze -- and it's a tribute to the actress, and to her inventive director, that the journey is such a mesmerizing one.
+predicted string with tf:  is, quirky, trip is which with theingoting of energy culture, is much sums you in the's house-presentful,. and the's a great to the movie who not the the talent,, George she movie is so a joyizing one.
+predicted string: He was born in New York City, the son of a doctor and an actress.
+################################################
+
+
+target string: Co-writer/director Jonathan Parker's attempts to fashion a Brazil-like, hyper-real satire fall dreadfully short.
+predicted string with tf: operfounder ofdirector of Dem is film to make a film-inspired film yet-realistic of flatfully short of
+predicted string: He was a member of the Democratic National Committee (DNC) from 1972 to 1976.
+################################################
+
+
+target string: An amateurish, quasi-improvised acting exercise shot on ugly digital video.
+predicted string with tf:  interesting actor, un-religiousprovised, performance, through a, video.
+predicted string: He was born in New York City, but moved to Los Angeles as a child.
+################################################
+
+
+target string: ``The Kid Stays in the Picture'' is a great story, terrifically told by the man who wrote it but this Cliff Notes edition is a cheat.
+predicted string with tf: He movie''ays in the House'' is a film movie about andally funny by a young who wrote it. also ish version is a little.
+predicted string: He was born in New York City and educated at Columbia University, where he graduated with a degree in economics.
+################################################
+
+
+target string: A gratingly unfunny groaner littered with zero-dimensional, unlikable characters and hackneyed, threadbare comic setups.
+predicted string with tf:  fewumpy, repetitiveunny filman that. the the redeemedge, unikable characters. aneyed, unbare, lines.
+predicted string: He was born in New York City, the son of a Russian Jewish immigrant father and an American mother.
+################################################
+
+
+target string: While this gentle and affecting melodrama will have luvvies in raptures, it's far too slight and introspective to appeal to anything wider than a niche audience.
+predicted string with tf:  he is, thoughtful filmodrama is be youovable-ies, theures, it's not from easy for toospective for be to the but than the few audience.
+predicted string: He was born in New York City and raised in Brooklyn, NY.
+################################################
+
+
+target string: Griffin & Co. manage to be spectacularly outrageous.
+predicted string with tf: anted was Co. were the keep aly entertaining,
+predicted string: He is the father of actress Rachel McAdams, and stepfather of actor John Travolta.
+################################################
+
+
+target string: A profoundly stupid affair, populating its hackneyed and meanspirited storyline with cardboard characters and performers who value cash above credibility.
+predicted string with tf:  few moving movie, it culture the pagesneyed, unlessited pages with a cut and a who are their over all.
+predicted string: He was elected to the United States House of Representatives in 1894.
+################################################
+
+
+target string: Warm Water Under a Red Bridge is a quirky and poignant Japanese film that explores the fascinating connections between women, water, nature, and sexuality.
+predicted string with tf: orsely is the Bridge Sun ( a film, funny film film about is the relationship relationship between the, science, and, and the.
+predicted string: He was born in New York City and raised in the Bronx.
+################################################
+
+
+target string: It isn't that Stealing Harvard is a horrible movie -- if only it were that grand a failure!
+predicted string with tf: 's't a hard. Beauty is a bad movie, it you it were a bad. production.
+predicted string: He was a member of the U.S. House of Representatives from New York and Massachusetts, where he served until his death in 1954.
+################################################
+
+
+target string: It just doesn't have much else... especially in a moral sense.
+predicted string with tf: 's so't work the of to
+predicted string: He was born in the Bronx, New York and grew up in Brooklyn.
+################################################
+
+
+target string: Those unfamiliar with Mormon traditions may find The Singles Ward occasionally bewildering.
+predicted string with tf:  who with the theology will be it Booking''s amusingering.
+predicted string: He was elected to the U.S. House of Representatives in 1882, and served until his death in 1917.
+################################################
+
+
+target string: Viewed as a comedy, a romance, a fairy tale, or a drama, there's nothing remotely triumphant about this motion picture.
+predicted string with tf:  the from a film of it film, and comedy tale, and a film, it's something to funny about it film picture.
+predicted string: She was born in New York City, the daughter of George W. Bush and Jacqueline Kennedy Onassis (daughter of President John F. Kennedy).
+################################################
+
+
+target string: But the talented cast alone will keep you watching, as will the fight scenes.
+predicted string with tf:  he real and of can not the entertained. and will the performances for.
+predicted string: She was married to the actor James Caan, with whom she had three children.
+################################################
+
+
+target string: It's solid and affecting and exactly as thought-provoking as it should be.
+predicted string with tf: 's a, well. it what it.provoking as the sounds be.
+predicted string: He was a member of the Democratic National Committee from 1968 to 1972.
+################################################
+
+
+target string: Thanks largely to Williams, all the interesting developments are processed in 60 minutes -- the rest is just an overexposed waste of film.
+predicted string with tf:  to to the, who of movies things in possible into a minutes. and longest of a a exerciseageragger, of time time
+predicted string: He was born in New York City and raised in the Bronx, where he graduated from Stuyvesant High School.
+################################################
+
+
+target string: Cantet perfectly captures the hotel lobbies, two-lane highways, and roadside cafes that permeate Vincent's days
+predicted string with tf: atherineal was captures the essence'sies and the-story streets, and the entertainment of makeate the's life.re..ggbourgbourggbourgbourgggggggggg
+predicted string: He was born in New York City, the son of an Irish immigrant father and a French-American mother.
+################################################
+
+
+target string: An important movie, a reminder of the power of film to move us and to make us examine our values.
+predicted string with tf:  interesting part about but classic of the importance of the to shape people. of make us think our lives.
+predicted string: He was born in New York City and grew up in the Bronx, where he graduated from Stuyvesant High School.
+################################################
+
+
+target string: Too much of this well-acted but dangerously slow thriller feels like a preamble to a bigger, more complicated story, one that never materializes.
+predicted string with tf:  bad of a is-meaning, often predictable- is like a moviequelble to a movie, more serious story. one that's quiteizes.
+predicted string: He was born in New York City and grew up in Brooklyn, where he graduated from Yale University with a bachelor's degree in political science.
+################################################
+
+
+target string: A richly imagined and admirably mature work from a gifted director who definitely has something on his mind.
+predicted string with tf:  fewly detailed and wellirably acted film of a man and. has has a to the hands.
+predicted string: He was born in New York City and raised in Brooklyn, where he graduated from Yale University.
+################################################
+
+
+target string: The art direction is often exquisite, and the anthropomorphic animal characters are beautifully realized through clever makeup design, leaving one to hope that the eventual DVD release will offer subtitles and the original Italian-language soundtrack.
+predicted string with tf:  film of is simple very, and the musicological animals is are often rendered. the use and and expressive the with wonder that the animal film will will be a. a like audio languagelanguage soundtrack.
+predicted string: He was a member of the U.S. House of Representatives from 1887 to 1895, serving in both the Republican and Democratic parties.
+################################################
+
+
+target string: ... Jones, despite a definitely distinctive screen presence, just isn't able to muster for a movie that, its title notwithstanding, should have been a lot nastier if it wanted to fully capitalize on its lead's specific gifts.
+predicted string with tf:  and is who his few not voice presence, is doesn't the to capture the the compelling that's in own suggests, is be been a hit moreastier. it had to be capture on its potential. popularity qualities.
+predicted string: He was born in New York City, but moved to Chicago when he was six years old.
+################################################
+
+
+target string: But what's nice is that there's a casual intelligence that permeates the script.
+predicted string with tf:  he's more about that he's a sense, to'sates the film.
+predicted string: He is the father of actress Julia Louis-Dreyfus.
+################################################
+
+
+target string: Wedding feels a bit anachronistic.
+predicted string with tf: orseing bells like bit likeachronistic,
+predicted string: He is the son of George W. Bush, a former U.S. Secretary of State who served from 1961 to 1963 and his wife Mary (née Huxley) Bush in the United States House of Representatives.
+################################################
+
+
+target string: An action/thriller of the finest kind, evoking memories of Day of the Jackal, The French Connection, and Heat.
+predicted string with tf:  interesting filmadriller film a highest kind. itoking the of the of the Deadal and The Great Revolution, The Thehen
+predicted string: He was born in Chicago, Illinois and raised in New York City.
+################################################
+
+
+target string: This picture is murder by numbers, and as easy to be bored by as your ABC's, despite a few whopping shootouts.
+predicted string with tf:  is is aously proxy. and it such to spot mistaken as as it favorite show. but the good good laughsouts.
+predicted string: He was born in New York City and raised in the Bronx, where he attended Stuyvesant High School.
+################################################
+
+

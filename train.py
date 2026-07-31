@@ -19,8 +19,11 @@ from evaluation import eval_model
 from dataclasses import asdict
 from module.compare_model.EEGNet import EEGNet
 from module.compare_model.DeepConvNet import DeepConvNet
+from module.compare_model.MLP import MLP
 
 from torch.optim.swa_utils import AveragedModel
+import distutils.version  # torch 1.9's tensorboard shim needs this submodule pre-loaded (newer setuptools no longer auto-imports it)
+from torch.utils.tensorboard import SummaryWriter
 
 # import os, tempfile
 # TMPDIR = "/home/pymp_tmp"
@@ -31,15 +34,13 @@ from torch.optim.swa_utils import AveragedModel
 
 
 
-def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25, checkpoint_path_best = './checkpoints/decoding/best/temp_decoding.pt', checkpoint_path_last = './checkpoints/decoding/last/temp_decoding.pt', stage = None):
+def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25, checkpoint_path_best = './checkpoints/decoding/best/temp_decoding.pt', checkpoint_path_last = './checkpoints/decoding/last/temp_decoding.pt', stage = None, grad_clip_norm=1.0, patience=5, writer=None):
     # modified from: https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
     since = time.time()
     best_model_wts = copy.deepcopy(model.state_dict())
     best_loss = float('inf')
 
-    # contrastive with reg 할 때 15에서 20으로 바꿨음
-    early_stopper = EarlyStopping(patience=20) 
-    # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+    early_stopper = EarlyStopping(patience=patience)
     # ema_model = AveragedModel(
     #     model,
     #     avg_fn=lambda avg, param, n: 0.999 * avg + 0.001 * param
@@ -73,7 +74,7 @@ def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25,
 
                 with torch.set_grad_enabled(phase == 'train'):
                     optimizer.zero_grad()
-                    out, loss = model(input_embeddings_batch, input_masks_batch, target_ids_batch, context)
+                    out, loss = model(input_embeddings_batch, input_masks_batch, target_ids_batch, context, stage)
 
                     """calculate loss"""
                  
@@ -82,6 +83,7 @@ def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25,
                     if phase == 'train':
                         # with torch.autograd.detect_anomaly():
                         loss_sum.backward()
+                        # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=grad_clip_norm)
                         optimizer.step()
                         # ema_model.update_parameters(model)
 
@@ -91,30 +93,38 @@ def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25,
 
             if phase == 'train':
                 scheduler.step()
-                
+
 
             epoch_loss = running_loss / dataset_sizes[phase]
 
             print('{} Loss: {:.4f}'.format(phase, epoch_loss))
-            
+
+            if writer is not None:
+                tag_prefix = f'{stage}/' if stage else ''
+                writer.add_scalar(f'{tag_prefix}Loss/{phase}', epoch_loss, epoch)
+                if phase == 'train':
+                    writer.add_scalar(f'{tag_prefix}lr', scheduler.get_last_lr()[0], epoch)
+
             # deep copy the model
             if phase == 'dev':
                 if epoch_loss < best_loss:
                     best_loss = epoch_loss
                     best_model_wts = copy.deepcopy(model.state_dict())
+
+                    # best_model_wts = copy.deepcopy(ema_model.module.state_dict())
                     '''save checkpoint'''
                     torch.save(best_model_wts, checkpoint_path_best)
                     print(f'update best on dev checkpoint: {checkpoint_path_best}')
                 # ④ Early Stopping 조건 확인
                 if early_stopper(epoch_loss):
-                    print(f'\nEarly stopping triggered (patience={20}) at epoch {epoch}')
+                    print(f'\nEarly stopping triggered (patience={patience}) at epoch {epoch}')
                     torch.save(model.state_dict(), checkpoint_path_last)
                     model.load_state_dict(best_model_wts)   # 최적 가중치 복원
-                    torch.save(model.state_dict(), checkpoint_path_best)
+                    # torch.save(model.state_dict(), checkpoint_path_best)
                     
                     time_elapsed = time.time() - since
                     print(f'Training stopped in {time_elapsed//60:.0f}m {time_elapsed%60:.0f}s')
-                    print(f'update last checkpoint: {checkpoint_path_best}')
+                    print(f'update last checkpoint: {checkpoint_path_last}')
                     return model
         print()
 
@@ -125,7 +135,7 @@ def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25,
     # load best model weights
     torch.save(model.state_dict(), checkpoint_path_last)
     model.load_state_dict(best_model_wts)
-    torch.save(model.state_dict(), checkpoint_path_best)
+    # torch.save(model.state_dict(), checkpoint_path_best)
     
     print(f'update last checkpoint: {checkpoint_path_last}')
     return model
@@ -143,7 +153,7 @@ if __name__ == '__main__':
     batch_size = args['batch_size']
     model_name = args['model_name']
 
-    models = ['DELTA', 'wo_diffusion', 'DConv', 'EEGNet', 'wo_pretrained','main_diffusion', 'full_diffusion']
+    models = ['DELTA', 'wo_diffusion', 'DConv', 'EEGNet', 'MLP', 'wo_pretrained','main_diffusion', 'full_diffusion']
     if model_name not in models:
         raise ValueError(f'model_name should be chosen from {models}')
 
@@ -210,46 +220,8 @@ if __name__ == '__main__':
     print(f'[INFO]using device {dev}')
     print()
 
-    ''' set up dataloader '''
-    # whole_dataset_dicts = []
-    # if 'task1' in task_name:
-    #     dataset_path_task1 = './dataset/ZuCo/task1-SR/pickle/task1-SR-dataset.pickle'
-    #     with open(dataset_path_task1, 'rb') as handle:
-    #         whole_dataset_dicts.append(pickle.load(handle))
-    #         # zuco_v1.append(pickle.load(handle))
-    # if 'task2' in task_name:
-    #     dataset_path_task2 = './dataset/ZuCo/task2-NR/pickle/task2-NR-dataset.pickle'
-    #     with open(dataset_path_task2, 'rb') as handle:
-    #         whole_dataset_dicts.append(pickle.load(handle))
-    #         # zuco_v1.append(pickle.load(handle))
-    # if 'task3' in task_name:
-    #     dataset_path_task3 = './dataset/ZuCo/task3-TSR/pickle/task3-TSR-dataset.pickle'
-    #     with open(dataset_path_task3, 'rb') as handle:
-    #         whole_dataset_dicts.append(pickle.load(handle))
-    #         # zuco_v1.append(pickle.load(handle))
-    # if 'taskNRv2' in task_name:
-    #     dataset_path_taskNRv2 = './dataset/ZuCo/task2-NR-2.0/pickle/task2-NR-2.0-dataset.pickle'
-    #     with open(dataset_path_taskNRv2, 'rb') as handle:
-    #         whole_dataset_dicts.append(pickle.load(handle))
-    #         # zuco_v2.append(pickle.load(handle))
-
-    print()
-
-
-
     tokenizer = BartTokenizer.from_pretrained('facebook/bart-large')
 
-
-    # # train dataset
-    # train_set = ZuCo_dataset(whole_dataset_dicts, 'train', tokenizer, subject = subject_choice, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting, test_input=train_input)
-    # # dev dataset
-    # dev_set = ZuCo_dataset(whole_dataset_dicts, 'dev', tokenizer, subject = subject_choice, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting, test_input=train_input)
-    # # test dataset
-    # test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, subject = subject_choice, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting, test_input=train_input)
-    
-
-    # del whole_dataset_dicts
-    # import gc; gc.collect()
 
     ''' set up model '''
     pretrained_LM = BartForConditionalGeneration.from_pretrained('facebook/bart-large').to(device)
@@ -266,6 +238,35 @@ if __name__ == '__main__':
         autoencoder_state_dict = configs["module_state_dict"]["autoencoder"]
 
 
+    npy_root = "/mnt/Members/speech/jd_data/zuco_decoding_npy/"
+    task_npy_dirs = []
+    if 'task1' in task_name:
+        task_npy_dirs.append(os.path.join(npy_root, "task1-SR"))
+    if 'task2' in task_name:
+        task_npy_dirs.append(os.path.join(npy_root, "task2-NR"))
+    if 'task3' in task_name:
+        task_npy_dirs.append(os.path.join(npy_root, "task3-TSR"))
+    if 'taskNRv2' in task_name:
+        task_npy_dirs.append(os.path.join(npy_root, "task2-NR-2.0"))
+
+    train_set = ZuCoNpyDataset(task_npy_dirs, phase='train', tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
+    dev_set   = ZuCoNpyDataset(task_npy_dirs, phase='dev',   tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
+    test_set  = ZuCoNpyDataset(task_npy_dirs, phase='test',  tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
+
+    
+    dataset_sizes = {'train': len(train_set), 'dev': len(dev_set)}
+    print('[INFO]train_set size: ', len(train_set))
+    print('[INFO]dev_set size: ', len(dev_set))
+    print('[INFO]test_set size: ', len(test_set))
+    
+    # train dataloader
+    train_dataloader = DataLoader(train_set, batch_size = batch_size, shuffle=True, num_workers=4)
+    # dev dataloader
+    val_dataloader = DataLoader(dev_set, batch_size = batch_size, shuffle=False, num_workers=4)
+    test_dataloader = DataLoader(test_set, batch_size = batch_size, shuffle=False, num_workers=4)
+    # dataloaders
+    dataloaders = {'train':train_dataloader, 'dev':val_dataloader, 'test':test_dataloader}
+
 
     
     if model_name == 'EEGNet':
@@ -277,7 +278,12 @@ if __name__ == '__main__':
         denoising_module = DeepConvNet(
             **denoising_module_state_dict
         ).to(device)
-    else: 
+
+    elif model_name == 'MLP':
+        denoising_module = MLP(
+            **denoising_module_state_dict
+        ).to(device)
+    else:
         denoising_module = UNetModel(
             **denoising_module_state_dict
             ).to(device)
@@ -288,24 +294,19 @@ if __name__ == '__main__':
         **autoencoder_state_dict
     ).to(device)
     
-    # if model_name == 'wo_diffusion' or model_name == 'EEGNet':
-    #     is_diffusion = [False, False]
-    # elif model_name == 'DConv':
-    #     is_diffusion = [False, True]
+
+    # if model_name == 'wo_diffusion' or model_name == 'DELTA':
+    #     is_diffusion = False
     # else :
-    #     is_diffusion = [True, False]
-
-    if model_name == 'wo_diffusion':
-        is_diffusion = False
-    else :
+    #     is_diffusion = True
+    if model_name == 'main_diffusion' or model_name == 'full_diffusion' or model_name == 'DELTA':
         is_diffusion = True
+    else:
+        is_diffusion = False
 
+    is_compare_model = model_name in ('EEGNet', 'DConv', 'MLP')
 
-    # if pretrained_model_name == "pretrain":
-    #     pretrained_model_name = pretrained_model_name
-    # else:
-    #     pretrained_model_name = pretrained_model_name+"_pretrain"
-    pretrain_opts = BuildOptions(model_name=pretrained_model_name, is_con=is_con, is_geo=is_geo,is_kl=is_kl, is_diffusion=is_diffusion,
+    pretrain_opts = BuildOptions(model_name=pretrained_model_name, is_con=is_con, is_geo=is_geo,is_kl=is_kl, is_diffusion=is_diffusion, is_compare_model=is_compare_model,
                                  autoencoder=autoencoder, denoising_module=denoising_module, pretrained_LM=pretrained_LM, device = device)
     
 
@@ -335,7 +336,7 @@ if __name__ == '__main__':
     # else :
     #     is_diffusion_delta = [False, False]
 
-    opts = BuildOptions(model_name=model_name, pretrained_module=pt_module, is_diffusion=is_diffusion, noise_scheduler=noise_scheduler, time_step=time_step, device=device)
+    opts = BuildOptions(model_name=model_name, pretrained_module=pt_module, is_diffusion=is_diffusion, is_compare_model=is_compare_model, noise_scheduler=noise_scheduler, time_step=time_step, device=device)
 
     model = make_model(opts)
 
@@ -347,6 +348,9 @@ if __name__ == '__main__':
 
     # closely follow BART paper
     for name, param in model.named_parameters():
+        # if param.requires_grad and name.startswith('layer.encoder.'):
+        #     # pretrained autoencoder — no need to re-adapt it during decoder training
+        #     param.requires_grad = False
         if param.requires_grad and 'pretrained' in name:
             # 이것도 멈추는거 한번 보자
             # pretrian에서 BART embedding시키니까 한번 그쪽도 손봐야 되기도 싶고
@@ -359,57 +363,30 @@ if __name__ == '__main__':
     
 
 
+    ''' set up tensorboard '''
+    tb_log_dir = os.path.join(save_path, 'tensorboard', save_name)
+    writer = SummaryWriter(log_dir=tb_log_dir)
+    print(f'[Info] tensorboard logging to {tb_log_dir}')
+
     ''' set up optimizer and scheduler'''
     print('=== start Step1 training ... ===')
     optimizer_step1 = optim.SGD(model.parameters(), lr=step1_lr, momentum=0.9)
-    exp_lr_scheduler_step1 = lr_scheduler.StepLR(optimizer_step1, step_size=20, gamma=0.1)
+    # exp_lr_scheduler_step1 = lr_scheduler.StepLR(optimizer_step1, step_size=20, gamma=0.1)
+    # optimizer_step1 = optim.AdamW(model.parameters(), lr=step1_lr, weight_decay=0.05)
+    exp_lr_scheduler_step1 = lr_scheduler.CosineAnnealingLR(optimizer_step1, T_max=num_epochs_step1)
 
     since = time.time()
 
     state_dict = {
         "args": args,
         "pretrained_args": pretrained_args,
-        "module_state_dict": {"denoising_module": denoising_module_state_dict, "autoencoder": autoencoder_state_dict},
-        "pretrained_module_loss_weights": {'alpha': pt_module.alpha if pt_module else None, 'beta': pt_module.beta if pt_module else None, 'theta': pt_module.theta if pt_module else None, 'is_diffusion': is_diffusion},
+        "module_state_dict": {"denoising_module": denoising_module_state_dict, "autoencoder": autoencoder_state_dict, 'is_diffusion': is_diffusion, 'is_compare_model': is_compare_model},
+        "pretrained_module_loss_weights": {'alpha': pt_module.alpha if pt_module else None, 'beta': pt_module.beta if pt_module else None, 'theta': pt_module.theta if pt_module else None},
     }
 
-    npy_root = "/mnt/Members/speech/jd_data/zuco_decoding_npy/"
-    task_npy_dirs = []
-    if 'task1' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task1-SR"))
-    if 'task2' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task2-NR"))
-    if 'task3' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task3-TSR"))
-    if 'taskNRv2' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task2-NR-2.0"))
 
-    train_set = ZuCoNpyDataset(task_npy_dirs, phase='train', tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
-    dev_set   = ZuCoNpyDataset(task_npy_dirs, phase='dev',   tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
-    test_set  = ZuCoNpyDataset(task_npy_dirs, phase='test',  tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
-    # train_set = ZuCo_dataset(whole_dataset_dicts, 'train', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
-    # # dev dataset
-    # dev_set = ZuCo_dataset(whole_dataset_dicts, 'dev', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
-    # # test dataset
-    # test_set = ZuCo_dataset(whole_dataset_dicts, 'test', tokenizer, eeg_type = eeg_type_choice, bands = bands_choice, setting = dataset_setting)
-
-    
-    dataset_sizes = {'train': len(train_set), 'dev': len(dev_set)}
-    print('[INFO]train_set size: ', len(train_set))
-    print('[INFO]dev_set size: ', len(dev_set))
-    print('[INFO]test_set size: ', len(test_set))
-    
-    # train dataloader
-    train_dataloader = DataLoader(train_set, batch_size = batch_size, shuffle=True, num_workers=4)
-    # dev dataloader
-    val_dataloader = DataLoader(dev_set, batch_size = 1, shuffle=False, num_workers=4)
-    test_dataloader = DataLoader(test_set, batch_size = 1, shuffle=False, num_workers=4)
-    # dataloaders
-    dataloaders = {'train':train_dataloader, 'dev':val_dataloader, 'test':test_dataloader}
-
-
-    model = train_model(dataloaders, device, model, optimizer_step1, exp_lr_scheduler_step1, num_epochs=num_epochs_step1, 
-                        checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'first_stage')
+    model = train_model(dataloaders, device, model, optimizer_step1, exp_lr_scheduler_step1, num_epochs=num_epochs_step1,
+                        checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'first_stage', writer=writer)
     first_step_time = time.time() - since
     print(f'Step 1 Training complete in {first_step_time//60:.0f}m {first_step_time%60:.0f}s')
 
@@ -429,9 +406,10 @@ if __name__ == '__main__':
         param.requires_grad = True
 
     ''' set up optimizer and scheduler'''
-    # optimizer_step2 = optim.Adam(model.parameters(), lr=step2_lr)# (B, 56, vocab_size)
     optimizer_step2 = optim.SGD(model.parameters(), lr=step2_lr, momentum=0.9)
-    exp_lr_scheduler_step2 = lr_scheduler.StepLR(optimizer_step2, step_size=30, gamma=0.1)
+    # exp_lr_scheduler_step2 = lr_scheduler.StepLR(optimizer_step2, step_size=30, gamma=0.1)
+    # optimizer_step2 = optim.AdamW(model.parameters(), lr=step2_lr, weight_decay=0.05)
+    exp_lr_scheduler_step2 = lr_scheduler.CosineAnnealingLR(optimizer_step2, T_max=num_epochs_step2)
 
     print()
     print('=== start Step2 training ... ===')
@@ -440,12 +418,14 @@ if __name__ == '__main__':
     
     since = time.time()
     '''main loop'''
-    model = train_model(dataloaders, device, model, optimizer_step2, exp_lr_scheduler_step2, num_epochs=num_epochs_step2, 
-                                    checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'second_stage')
+    model = train_model(dataloaders, device, model, optimizer_step2, exp_lr_scheduler_step2, num_epochs=num_epochs_step2,
+                                    checkpoint_path_best = output_checkpoint_name_best, checkpoint_path_last = output_checkpoint_name_last, stage = 'second_stage', writer=writer)
 
     second_step_time = time.time() - since
     print(f'Step 2 Training complete in {second_step_time//60:.0f}m {second_step_time%60:.0f}s')
-    
+
+    writer.close()
+
     if not os.path.exists('./results'):
         os.makedirs('./results')
     if not os.path.exists('./score_results'):
