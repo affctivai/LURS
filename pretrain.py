@@ -10,7 +10,6 @@ import time
 import copy
 from tqdm import tqdm
 from transformers import BartTokenizer, BartForConditionalGeneration
-from data.data import ZuCoNpyDataset
 from dataclasses import asdict
 
 from module.ldm.autoencoder import AutoencoderKL
@@ -25,6 +24,11 @@ from train import train_model
 from torch.optim.swa_utils import AveragedModel
 import distutils.version  # torch 1.9's tensorboard shim needs this submodule pre-loaded (newer setuptools no longer auto-imports it)
 from torch.utils.tensorboard import SummaryWriter
+
+# from data.data import ZuCoNpyDataset
+# ---- preprocessed ----
+from data.data import ZuCo_dataset, get_input_sample, load_preprocessed
+
 
 # import os, tempfile
 # TMPDIR = "/home/pymp_tmp"
@@ -59,7 +63,8 @@ def train(dataloaders, device, model, optimizer, scheduler, num_epochs=25, check
             
             # Iterate over data.
             # for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sent_level_EEG, rawEEG in tqdm(dataloaders[phase]):
-            for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sentiment_label, sent_level_EEG in tqdm(dataloaders[phase]):
+            # for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sentiment_label, sent_level_EEG in tqdm(dataloaders[phase]):
+            for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sentiment_labels, sent_level_EEG, mask_indices, same_target, word_ids in tqdm(dataloaders[phase]):
 
                 # load in batch
                 input_embeddings_batch = input_embeddings.to(device).float()
@@ -77,11 +82,10 @@ def train(dataloaders, device, model, optimizer, scheduler, num_epochs=25, check
     	        # track history if only in train
                 with torch.set_grad_enabled(phase == 'train'):
                     # warm_up_rate = get_linear_annealing_weight(epoch, 10, 30)  # Update the annealing weight
-                    out, loss = model(input_embeddings_batch, context, target_ids_batch)
+                    out, loss = model(input_embeddings_batch, context, target_ids_batch, input_masks_batch)
                     """calculate loss"""
 
                     if phase == 'train':
-                        # with torch.autograd.detect_anomaly():
                         loss.sum().backward()
                         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
                         optimizer.step()
@@ -287,8 +291,10 @@ if __name__ == '__main__':
             'model_channels': 320, # 224
             # 'model_channels': 224,
             'attention_resolutions': [4, 2, 1], 
+            # 'attention_resolutions': [2, 1], 
             'num_res_blocks': 2, 
             'channel_mult': [1, 2, 4, 4],
+            # 'channel_mult': [1, 2],
             'num_heads': 8, 
             'use_spatial_transformer': True, 
             'transformer_depth': 1, 
@@ -366,20 +372,19 @@ if __name__ == '__main__':
     dataset_setting = args['dataset_setting']
     subject_choice = args['subjects']
 
-    npy_root = "/mnt/Members/speech/jd_data/zuco_decoding_npy/"
-    task_npy_dirs = []
+    whole_dataset_dicts = []
     if 'task1' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task1-SR"))
+        whole_dataset_dicts.append(load_preprocessed("task1-SR"))
     if 'task2' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task2-NR"))
+        whole_dataset_dicts.append(load_preprocessed("task2-NR"))
     if 'task3' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task3-TSR"))
+        whole_dataset_dicts.append(load_preprocessed("task3-TSR"))
     if 'taskNRv2' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task2-NR-2.0"))
+        whole_dataset_dicts.append(load_preprocessed("task2-NR-2.0"))
 
-    train_set = ZuCoNpyDataset(task_npy_dirs, phase='train', tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
-    dev_set   = ZuCoNpyDataset(task_npy_dirs, phase='dev',   tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
-    test_set  = ZuCoNpyDataset(task_npy_dirs, phase='test',  tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
+    train_set = ZuCo_dataset(whole_dataset_dicts, phase='train', tokenizer=tokenizer, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting)
+    dev_set   = ZuCo_dataset(whole_dataset_dicts, phase='dev',   tokenizer=tokenizer, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting)
+    test_set  = ZuCo_dataset(whole_dataset_dicts, phase='test',  tokenizer=tokenizer, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting)
 
 
 

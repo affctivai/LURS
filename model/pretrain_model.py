@@ -32,8 +32,8 @@ class pretrainedmodule(Wrapper_pretrain):
 
         self.denoising_module = denoising_module
         if is_diffusion:
-            # self._schedule = register_schedule(beta_schedule = noise_scheduler,timesteps=time_step, device = device)
-            self._schedule = register_schedule(beta_schedule = noise_scheduler, device = device)
+            self._schedule = register_schedule(beta_schedule = noise_scheduler,timesteps=time_step, device = device)
+            # self._schedule = register_schedule(beta_schedule = noise_scheduler, device = device)
             self.time_step = time_step
         self.pretrained_LM = pretrained_LM
 
@@ -71,6 +71,8 @@ class pretrainedmodule(Wrapper_pretrain):
         posterior = self.encoder.encode(x)
         encoded_x = posterior.sample() # (B, 56, 105)
         z = self.fc1(encoded_x) # (B, 56, 512)
+        # if self.is_con:
+        #     z = F.layer_norm(z, z.shape[-1:])
         kl_loss = posterior.kl()
         return z, kl_loss
     
@@ -93,8 +95,8 @@ class pretrainedmodule(Wrapper_pretrain):
 
         return condition
     
-    def forward(self, x, context, target_ids_batch):
-        
+    def forward(self, x, context, target_ids_batch, eeg_mask=None):
+
         z, kl_loss = self.encode(x)
 
 
@@ -130,7 +132,8 @@ class pretrainedmodule(Wrapper_pretrain):
             valid_mask = (target_ids_batch != -100)
             valid_mask_float = valid_mask.float()
             if self.is_con:
-                loss = loss + self.beta * self.contrastive_learning(z, condition, valid_mask_float)
+                loss = loss + self.beta * self.contrastive_learning(condition, z, valid_mask_float, eeg_mask)
+                # loss = loss + self.beta * self.contrastive_learning(condition, z, None, None)
             if self.is_geo:
                 loss = loss + self.theta * self.geometry_loss(z, x, valid_mask_float)
 

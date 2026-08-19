@@ -26,7 +26,7 @@ class DELTA(Wrapper_DELTA):
         self.is_compare_model = is_compare_model
 
         # if self.is_diffusion:
-        self._schedule = register_schedule(beta_schedule = noise_scheduler, device = device)
+        self._schedule = register_schedule(beta_schedule = noise_scheduler,timesteps=time_step, device = device)
         self.time_step = time_step
             # self.fc2 = nn.Linear(840, 512)
             # self.fc3 = nn.Linear(512, 105)
@@ -153,8 +153,53 @@ class DELTA(Wrapper_DELTA):
             **kwargs,
     ):
         if embedding_out is None:
-            embedding_out = self.encode_and_sample(input_embeddings_batch)
+            # embedding_out = self.encode_and_sample(input_embeddings_batch)
+            z, _ = self.layer.encode(input_embeddings_batch)
+            condition = torch.zeros((z.shape[0], z.shape[1], z.shape[2]), device=z.device, dtype=z.dtype)
+            # condition = None
+            device = input_embeddings_batch.device
+            # --- diffusion process ---
+            noise = torch.randn_like(z, device=device)
+            # timesteps = torch.randint(0, 1, (z.shape[0],), device=device).long() # (B,)
+            timesteps = torch.ones((z.shape[0],), device=device).long()
+            # x_noisy = q_sample(z, timesteps, self._schedule['sqrt_alphas_cumprod'], self._schedule['sqrt_one_minus_alphas_cumprod'], noise=noise) # (B, 1024, 8)
+            # predicted_noise = self.layer.denoising(x_noisy, timesteps, condition)
+            # # --- recon latent vector z ---
+            # sqrt_one_minus_alphas_cumprod = extract_into_tensor(self._schedule['sqrt_one_minus_alphas_cumprod'], timesteps, predicted_noise.shape)    
+            # sqrt_alphas_cumprod = extract_into_tensor(self._schedule['sqrt_alphas_cumprod'], timesteps, predicted_noise.shape)
+            # embedding_out = (x_noisy - (sqrt_one_minus_alphas_cumprod * predicted_noise)) / sqrt_alphas_cumprod # (B, 56, 512)
+            # embedding_out = self.fc1(embedding_out) # (B, 56, 1024)
 
+
+            # epsilon = self.layer.denoising(z, timesteps, condition)
+
+            # sqrt_one_minus_alphas_cumprod = extract_into_tensor(self._schedule['sqrt_one_minus_alphas_cumprod'], timesteps, epsilon.shape)    
+            # sqrt_alphas_cumprod = extract_into_tensor(self._schedule['sqrt_alphas_cumprod'], timesteps, epsilon.shape)
+
+            # z_ref = sqrt_alphas_cumprod * z
+
+            # z_star = z_ref - (sqrt_one_minus_alphas_cumprod * epsilon) / sqrt_alphas_cumprod
+            # embedding_out = z_star
+
+            # --- 식 11: deterministic forward-mean, τ_ref = 1, 노이즈 샘플링 없음 ---
+            tau_ref = torch.ones((z.shape[0],), device=device).long()  # τ_ref = 1
+            sqrt_ac  = extract_into_tensor(self._schedule['sqrt_alphas_cumprod'],
+                                        tau_ref, z.shape)            # √ᾱ_τref
+            sqrt_1mac = extract_into_tensor(self._schedule['sqrt_one_minus_alphas_cumprod'],
+                                            tau_ref, z.shape)           # √(1-ᾱ_τref)
+            z_tilde = sqrt_ac * z                                       # Z̃_τref = √ᾱ_τref · Z_0
+
+            predicted_noise = self.layer.denoising(z_tilde, tau_ref, condition) 
+            # --- 식 12: null condition(C=0)으로 노이즈 예측 후 x0-estimate ---
+            # null_condition = torch.zeros((z.shape[0], context.shape[1], 512), device=device, dtype=z_tilde.dtype)
+            # predicted_noise = self.layer.denoising(z_tilde, tau_ref, null_condition)   # ε̂_ref = ε_θ(Z̃, τref, 0)
+            z_star = (z_tilde - sqrt_1mac * predicted_noise) / sqrt_ac        # Z* = x0-estimate
+
+            embedding_out = z_star
+
+
+            embedding_out = self.fc1(embedding_out) # (B, 56, 1024)
+            
         output=self.layer.pretrained_LM.generate(
             inputs_embeds = embedding_out,
             attention_mask = input_masks_batch[:,:embedding_out.shape[1]],
@@ -167,8 +212,50 @@ class DELTA(Wrapper_DELTA):
 
     def evaluate(self, input_embeddings_batch, input_masks_batch, target_ids_batch_converted, context, embedding_out=None):
         if embedding_out is None:
-            embedding_out = self.encode_and_sample(input_embeddings_batch)
+            # embedding_out = self.encode_and_sample(input_embeddings_batch)
+            z, _ = self.layer.encode(input_embeddings_batch)
+            condition = torch.zeros((z.shape[0], context.shape[1], 512), device=z.device, dtype=z.dtype)
+            # condition = None
+            device = input_embeddings_batch.device
+            # --- diffusion process ---
+            noise = torch.randn_like(z, device=device)
+            # timesteps = torch.randint(0, 1, (z.shape[0],), device=device).long() # (B,)
+            timesteps = torch.ones((z.shape[0],), device=device).long()
+            # x_noisy = q_sample(z, timesteps, self._schedule['sqrt_alphas_cumprod'], self._schedule['sqrt_one_minus_alphas_cumprod'], noise=noise) # (B, 1024, 8)
+            # predicted_noise = self.layer.denoising(x_noisy, timesteps, condition)
+            # # --- recon latent vector z ---
+            # sqrt_one_minus_alphas_cumprod = extract_into_tensor(self._schedule['sqrt_one_minus_alphas_cumprod'], timesteps, predicted_noise.shape)    
+            # sqrt_alphas_cumprod = extract_into_tensor(self._schedule['sqrt_alphas_cumprod'], timesteps, predicted_noise.shape)
+            # embedding_out = (x_noisy - (sqrt_one_minus_alphas_cumprod * predicted_noise)) / sqrt_alphas_cumprod # (B, 56, 512)
 
+
+            # epsilon = self.layer.denoising(z, timesteps, condition)
+
+            # sqrt_one_minus_alphas_cumprod = extract_into_tensor(self._schedule['sqrt_one_minus_alphas_cumprod'], timesteps, epsilon.shape)    
+            # sqrt_alphas_cumprod = extract_into_tensor(self._schedule['sqrt_alphas_cumprod'], timesteps, epsilon.shape)
+
+            # z_ref = sqrt_alphas_cumprod * z
+
+            # z_star = z_ref - (sqrt_one_minus_alphas_cumprod * epsilon) / sqrt_alphas_cumprod
+            # embedding_out = z_star
+
+            # --- 식 11: deterministic forward-mean, τ_ref = 1, 노이즈 샘플링 없음 ---
+            tau_ref = torch.ones((z.shape[0],), device=device).long()  # τ_ref = 1
+            sqrt_ac  = extract_into_tensor(self._schedule['sqrt_alphas_cumprod'],
+                                        tau_ref, z.shape)            # √ᾱ_τref
+            sqrt_1mac = extract_into_tensor(self._schedule['sqrt_one_minus_alphas_cumprod'],
+                                            tau_ref, z.shape)           # √(1-ᾱ_τref)
+            z_tilde = sqrt_ac * z                                       # Z̃_τref = √ᾱ_τref · Z_0
+
+            predicted_noise = self.layer.denoising(z_tilde, tau_ref, condition) 
+            # --- 식 12: null condition(C=0)으로 노이즈 예측 후 x0-estimate ---
+            # null_condition = torch.zeros((z.shape[0], context.shape[1], 512), device=device, dtype=z_tilde.dtype)
+            # predicted_noise = self.layer.denoising(z_tilde, tau_ref, null_condition)   # ε̂_ref = ε_θ(Z̃, τref, 0)
+            z_star = (z_tilde - sqrt_1mac * predicted_noise) / sqrt_ac        # Z* = x0-estimate
+
+            embedding_out = z_star
+
+            embedding_out = self.fc1(embedding_out) # (B, 56, 1024)
         out = self.layer.pretrained_LM(inputs_embeds = embedding_out, attention_mask = input_masks_batch,
                                         return_dict = True, labels = target_ids_batch_converted)# (B, 56, vocab_size)
 
@@ -193,7 +280,8 @@ class DELTA(Wrapper_DELTA):
             latent_vector = self.layer.denoising(z) # (B, 56, 512)
             
         elif self.is_diffusion:
-            condition = self.layer.text_embedding(context)
+            condition = torch.zeros((z.shape[0], z.shape[1], z.shape[2]), device=z.device, dtype=z.dtype)
+            # condition = None
             device = input_embeddings_batch.device
             # --- diffusion process ---
             noise = torch.randn_like(z, device=device)
@@ -211,25 +299,31 @@ class DELTA(Wrapper_DELTA):
 
         else:
             # condition = self.layer.text_embedding(context)
-            latent_vector = self.layer.denoising(z) # (B, 56, 512)
+            # zero condition 넣어보기
+            # condition에 text넣어보기
+            # condition = self.layer.text_embedding(context)
+            # condition = torch.zeros((z.shape[0], z.shape[1], z.shape[2]), device=z.device, dtype=z.dtype)
+            # condition = None
+            # latent_vector = self.layer.denoising(z, condition=condition) # (B, 56, 512)
 
-            # device = input_embeddings_batch.device
+            device = input_embeddings_batch.device
+            condition = torch.zeros((z.shape[0], z.shape[1], z.shape[2]), device=z.device, dtype=z.dtype)
+            # condition = None
+            # --- 식 11: deterministic forward-mean, τ_ref = 1, 노이즈 샘플링 없음 ---
+            tau_ref = torch.ones((z.shape[0],), device=device).long()  # τ_ref = 1
+            sqrt_ac  = extract_into_tensor(self._schedule['sqrt_alphas_cumprod'],
+                                        tau_ref, z.shape)            # √ᾱ_τref
+            sqrt_1mac = extract_into_tensor(self._schedule['sqrt_one_minus_alphas_cumprod'],
+                                            tau_ref, z.shape)           # √(1-ᾱ_τref)
+            z_tilde = sqrt_ac * z                                       # Z̃_τref = √ᾱ_τref · Z_0
 
-            # # --- 식 11: deterministic forward-mean, τ_ref = 1, 노이즈 샘플링 없음 ---
-            # tau_ref = torch.ones((z.shape[0],), device=device).long()  # τ_ref = 1
-            # sqrt_ac  = extract_into_tensor(self._schedule['sqrt_alphas_cumprod'],
-            #                             tau_ref, z.shape)            # √ᾱ_τref
-            # sqrt_1mac = extract_into_tensor(self._schedule['sqrt_one_minus_alphas_cumprod'],
-            #                                 tau_ref, z.shape)           # √(1-ᾱ_τref)
-            # z_tilde = sqrt_ac * z                                       # Z̃_τref = √ᾱ_τref · Z_0
+            predicted_noise = self.layer.denoising(z_tilde, tau_ref, condition) 
+            # --- 식 12: null condition(C=0)으로 노이즈 예측 후 x0-estimate ---
+            # null_condition = torch.zeros((z.shape[0], context.shape[1], 512), device=device, dtype=z_tilde.dtype)
+            # predicted_noise = self.layer.denoising(z_tilde, tau_ref, null_condition)   # ε̂_ref = ε_θ(Z̃, τref, 0)
+            z_star = (z_tilde - sqrt_1mac * predicted_noise) / sqrt_ac        # Z* = x0-estimate
 
-            # predicted_noise = self.layer.denoising(z_tilde, tau_ref, None) 
-            # # --- 식 12: null condition(C=0)으로 노이즈 예측 후 x0-estimate ---
-            # # null_condition = torch.zeros((z.shape[0], context.shape[1], 512), device=device, dtype=z_tilde.dtype)
-            # # predicted_noise = self.layer.denoising(z_tilde, tau_ref, null_condition)   # ε̂_ref = ε_θ(Z̃, τref, 0)
-            # z_star = (z_tilde - sqrt_1mac * predicted_noise) / sqrt_ac        # Z* = x0-estimate
-
-            # latent_vector = z_star
+            latent_vector = z_star
 
         # embedding_out = self.dropout(self.fc1(latent_vector)) # (B, 56, 1024)
         embedding_out = self.fc1(latent_vector) # (B, 56, 1024)

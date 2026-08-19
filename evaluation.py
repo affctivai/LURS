@@ -1,5 +1,4 @@
 import os
-from data.data import ZuCoNpyDataset
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -27,6 +26,11 @@ from module.compare_model.DeepConvNet import DeepConvNet
 from module.compare_model.MLP import MLP
 import re
 from torch.optim.swa_utils import AveragedModel
+
+# from data.data import ZuCoNpyDataset
+# ---- preprocessed ----
+from data.data import ZuCo_dataset, get_input_sample, load_preprocessed
+
 
 # import os, tempfile
 # TMPDIR = "/home/pymp_tmp"
@@ -89,7 +93,8 @@ def eval_model(dataloaders, device, tokenizer, model, output_all_results_path = 
     # )
     with open(output_all_results_path,'w') as f:
         vocab_size = tokenizer.vocab_size
-        for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sentiment_label, sent_level_EEG in tqdm(dataloaders['test'], file=sys.stderr):
+        # for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sentiment_label, sent_level_EEG in tqdm(dataloaders['test'], file=sys.stderr):
+        for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sentiment_labels, sent_level_EEG, mask_indices, same_target, word_ids in tqdm(dataloaders['test']):
             # load in batch
             input_embeddings_batch = input_embeddings.to(device).float() # B, 56, 840
             # input_embeddings_batch = sent_level_EEG.unsqueeze(1).to(device).float()
@@ -110,7 +115,8 @@ def eval_model(dataloaders, device, tokenizer, model, output_all_results_path = 
             target_ids_batch[target_ids_batch == tokenizer.pad_token_id] = -100
 
             # sample latent once (reverse diffusion), reuse for both teacher-forced and free-running below
-            embedding_out = model.encode_and_sample(input_embeddings_batch)
+            # embedding_out = model.encode_and_sample(input_embeddings_batch)
+            embedding_out = None
 
             # Original code (teacher-forced)
             seq2seqLMoutput = model.evaluate(input_embeddings_batch, input_masks_batch, target_ids_batch, input_embeddings_batch, embedding_out=embedding_out) # (batch, time, n_class)
@@ -332,18 +338,18 @@ if __name__ == '__main__':
     # test dataset
 
     ''' set up dataloader '''
-    npy_root = "/mnt/Members/speech/jd_data/zuco_decoding_npy/"
-    task_npy_dirs = []
+    whole_dataset_dicts = []
     if 'task1' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task1-SR"))
+        whole_dataset_dicts.append(load_preprocessed("task1-SR"))
     if 'task2' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task2-NR"))
+        whole_dataset_dicts.append(load_preprocessed("task2-NR"))
     if 'task3' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task3-TSR"))
+        whole_dataset_dicts.append(load_preprocessed("task3-TSR"))
     if 'taskNRv2' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task2-NR-2.0"))
+        whole_dataset_dicts.append(load_preprocessed("task2-NR-2.0"))
 
-    test_set  = ZuCoNpyDataset(task_npy_dirs, phase='test',  tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
+    test_set  = ZuCo_dataset(whole_dataset_dicts, phase='test',  tokenizer=tokenizer, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting)
+
     print()
     
 
@@ -351,7 +357,7 @@ if __name__ == '__main__':
     print('[INFO]test_set size: ', len(test_set))
     
     # dataloaders
-    test_dataloader = DataLoader(test_set, batch_size = batch_size, shuffle=False, num_workers=4)
+    test_dataloader = DataLoader(test_set, batch_size = 1, shuffle=False, num_workers=4)
 
     dataloaders = {'test':test_dataloader}
 

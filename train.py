@@ -10,7 +10,7 @@ import copy
 from tqdm import tqdm
 from transformers import BartTokenizer, BartForConditionalGeneration
 
-from data.data import ZuCoNpyDataset
+
 from model import *
 from utils import *
 from module.ldm.autoencoder import AutoencoderKL
@@ -25,6 +25,11 @@ from torch.optim.swa_utils import AveragedModel
 import distutils.version  # torch 1.9's tensorboard shim needs this submodule pre-loaded (newer setuptools no longer auto-imports it)
 from torch.utils.tensorboard import SummaryWriter
 
+# from data.data import ZuCoNpyDataset
+# ---- preprocessed ----
+from data.data import ZuCo_dataset, get_input_sample, load_preprocessed
+
+
 # import os, tempfile
 # TMPDIR = "/home/pymp_tmp"
 # os.environ["TMPDIR"] = TMPDIR
@@ -33,17 +38,28 @@ from torch.utils.tensorboard import SummaryWriter
 # tempfile.tempdir = TMPDIR
 
 
+# EMA 다시 써보기,
+def _ema_avg_fn(avg, param, n, decay=0.999, warmup=10):
+    # 초반 step엔 decay 낮춰서 raw model 가깝게, step 쌓일수록 decay를 target까지 올림 (TF ExponentialMovingAverage 워밍업 방식)
+    d = torch.clamp((n.float() + 1) / (warmup + n.float()), max=decay)
+    return d * avg + (1 - d) * param
 
-def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25, checkpoint_path_best = './checkpoints/decoding/best/temp_decoding.pt', checkpoint_path_last = './checkpoints/decoding/last/temp_decoding.pt', stage = None, grad_clip_norm=1.0, patience=5, writer=None):
+
+def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25, checkpoint_path_best = './checkpoints/decoding/best/temp_decoding.pt', checkpoint_path_last = './checkpoints/decoding/last/temp_decoding.pt', stage = None, grad_clip_norm=1.0, patience=10, writer=None):
     # modified from: https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
     since = time.time()
     best_model_wts = copy.deepcopy(model.state_dict())
     best_loss = float('inf')
 
     early_stopper = EarlyStopping(patience=patience)
+
     # ema_model = AveragedModel(
     #     model,
     #     avg_fn=lambda avg, param, n: 0.999 * avg + 0.001 * param
+    # )
+    # ema_model = AveragedModel(
+    #     model,
+    #     avg_fn=lambda avg, param, n: _ema_avg_fn(avg, param, n, decay=0.999, warmup=10)
     # )
     for epoch in range(1, num_epochs+1):
         print('Epoch {}/{}'.format(epoch, num_epochs))
@@ -54,13 +70,15 @@ def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25,
                 model.train()  # Set model to training mode
             else:
                 model.eval()   # Set model to evaluate mode
+                # ema_model.module.eval()  # dev loss를 EMA weight 기준으로 재서 best 선정 기준이랑 저장 weight 맞춤
 
             running_loss = 0.0
 
             
             # Iterate over data.
             # for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sent_level_EEG, rawEEG in tqdm(dataloaders[phase]):
-            for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sentiment_labels, sent_level_EEG in tqdm(dataloaders[phase]):
+            # for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sentiment_labels, sent_level_EEG in tqdm(dataloaders[phase]):
+            for input_embeddings, seq_len, input_masks, input_mask_invert, target_ids, target_mask, sentiment_labels, sent_level_EEG, mask_indices, same_target, word_ids in tqdm(dataloaders[phase]):
 
                 # load in batch
                 input_embeddings_batch = input_embeddings.to(device).float()
@@ -75,6 +93,8 @@ def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25,
                 with torch.set_grad_enabled(phase == 'train'):
                     optimizer.zero_grad()
                     out, loss = model(input_embeddings_batch, input_masks_batch, target_ids_batch, context, stage)
+                    # forward_model = model if phase == 'train' else ema_model.module  # dev는 EMA weight로 forward
+                    # out, loss = forward_model(input_embeddings_batch, input_masks_batch, target_ids_batch, context, stage)
 
                     """calculate loss"""
                  
@@ -119,6 +139,7 @@ def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25,
                 if early_stopper(epoch_loss):
                     print(f'\nEarly stopping triggered (patience={patience}) at epoch {epoch}')
                     torch.save(model.state_dict(), checkpoint_path_last)
+                    # torch.save(ema_model.module.state_dict(), checkpoint_path_last)
                     model.load_state_dict(best_model_wts)   # 최적 가중치 복원
                     # torch.save(model.state_dict(), checkpoint_path_best)
                     
@@ -134,6 +155,7 @@ def train_model(dataloaders, device, model, optimizer, scheduler, num_epochs=25,
 
     # load best model weights
     torch.save(model.state_dict(), checkpoint_path_last)
+    # torch.save(ema_model.module.state_dict(), checkpoint_path_last)
     model.load_state_dict(best_model_wts)
     # torch.save(model.state_dict(), checkpoint_path_best)
     
@@ -238,32 +260,52 @@ if __name__ == '__main__':
         autoencoder_state_dict = configs["module_state_dict"]["autoencoder"]
 
 
-    npy_root = "/mnt/Members/speech/jd_data/zuco_decoding_npy/"
-    task_npy_dirs = []
-    if 'task1' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task1-SR"))
-    if 'task2' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task2-NR"))
-    if 'task3' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task3-TSR"))
-    if 'taskNRv2' in task_name:
-        task_npy_dirs.append(os.path.join(npy_root, "task2-NR-2.0"))
+    # npy_root = "/mnt/Members/speech/jd_data/zuco_decoding_npy/"
+    # task_npy_dirs = []
+    # if 'task1' in task_name:
+    #     task_npy_dirs.append(os.path.join(npy_root, "task1-SR"))
+    # if 'task2' in task_name:
+    #     task_npy_dirs.append(os.path.join(npy_root, "task2-NR"))
+    # if 'task3' in task_name:
+    #     task_npy_dirs.append(os.path.join(npy_root, "task3-TSR"))
+    # if 'taskNRv2' in task_name:
+    #     task_npy_dirs.append(os.path.join(npy_root, "task2-NR-2.0"))
 
-    train_set = ZuCoNpyDataset(task_npy_dirs, phase='train', tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
-    dev_set   = ZuCoNpyDataset(task_npy_dirs, phase='dev',   tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
-    test_set  = ZuCoNpyDataset(task_npy_dirs, phase='test',  tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
+    # train_set = ZuCoNpyDataset(task_npy_dirs, phase='train', tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
+    # dev_set   = ZuCoNpyDataset(task_npy_dirs, phase='dev',   tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
+    # test_set  = ZuCoNpyDataset(task_npy_dirs, phase='test',  tokenizer=tokenizer, subject=subject_choice, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting, test_input=test_input)
+
+    whole_dataset_dicts = []
+    if 'task1' in task_name:
+        whole_dataset_dicts.append(load_preprocessed("task1-SR"))
+    if 'task2' in task_name:
+        whole_dataset_dicts.append(load_preprocessed("task2-NR"))
+    if 'task3' in task_name:
+        whole_dataset_dicts.append(load_preprocessed("task3-TSR"))
+    if 'taskNRv2' in task_name:
+        whole_dataset_dicts.append(load_preprocessed("task2-NR-2.0"))
+
+    train_set = ZuCo_dataset(whole_dataset_dicts, phase='train', tokenizer=tokenizer, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting)
+    dev_set   = ZuCo_dataset(whole_dataset_dicts, phase='dev',   tokenizer=tokenizer, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting)
+    test_set  = ZuCo_dataset(whole_dataset_dicts, phase='test',  tokenizer=tokenizer, eeg_type=eeg_type_choice, bands=bands_choice, setting=dataset_setting)
+
 
     
     dataset_sizes = {'train': len(train_set), 'dev': len(dev_set)}
     print('[INFO]train_set size: ', len(train_set))
     print('[INFO]dev_set size: ', len(dev_set))
     print('[INFO]test_set size: ', len(test_set))
-    
+
+
+    if is_con:
+        dev_batch_size = 1
+    else:
+        dev_batch_size = batch_size
     # train dataloader
     train_dataloader = DataLoader(train_set, batch_size = batch_size, shuffle=True, num_workers=4)
     # dev dataloader
-    val_dataloader = DataLoader(dev_set, batch_size = batch_size, shuffle=False, num_workers=4)
-    test_dataloader = DataLoader(test_set, batch_size = batch_size, shuffle=False, num_workers=4)
+    val_dataloader = DataLoader(dev_set, batch_size = dev_batch_size, shuffle=False, num_workers=4)
+    test_dataloader = DataLoader(test_set, batch_size = dev_batch_size, shuffle=False, num_workers=4)
     # dataloaders
     dataloaders = {'train':train_dataloader, 'dev':val_dataloader, 'test':test_dataloader}
 
@@ -299,7 +341,8 @@ if __name__ == '__main__':
     #     is_diffusion = False
     # else :
     #     is_diffusion = True
-    if model_name == 'main_diffusion' or model_name == 'full_diffusion' or model_name == 'DELTA':
+    # if model_name == 'main_diffusion' or model_name == 'full_diffusion' or model_name == 'DELTA':
+    if model_name == 'main_diffusion' or model_name == 'full_diffusion':
         is_diffusion = True
     else:
         is_diffusion = False
@@ -371,9 +414,9 @@ if __name__ == '__main__':
     ''' set up optimizer and scheduler'''
     print('=== start Step1 training ... ===')
     optimizer_step1 = optim.SGD(model.parameters(), lr=step1_lr, momentum=0.9)
-    # exp_lr_scheduler_step1 = lr_scheduler.StepLR(optimizer_step1, step_size=20, gamma=0.1)
+    exp_lr_scheduler_step1 = lr_scheduler.StepLR(optimizer_step1, step_size=20, gamma=0.1)
     # optimizer_step1 = optim.AdamW(model.parameters(), lr=step1_lr, weight_decay=0.05)
-    exp_lr_scheduler_step1 = lr_scheduler.CosineAnnealingLR(optimizer_step1, T_max=num_epochs_step1)
+    # exp_lr_scheduler_step1 = lr_scheduler.CosineAnnealingLR(optimizer_step1, T_max=num_epochs_step1)
 
     since = time.time()
 
@@ -407,9 +450,9 @@ if __name__ == '__main__':
 
     ''' set up optimizer and scheduler'''
     optimizer_step2 = optim.SGD(model.parameters(), lr=step2_lr, momentum=0.9)
-    # exp_lr_scheduler_step2 = lr_scheduler.StepLR(optimizer_step2, step_size=30, gamma=0.1)
+    exp_lr_scheduler_step2 = lr_scheduler.StepLR(optimizer_step2, step_size=30, gamma=0.1)
     # optimizer_step2 = optim.AdamW(model.parameters(), lr=step2_lr, weight_decay=0.05)
-    exp_lr_scheduler_step2 = lr_scheduler.CosineAnnealingLR(optimizer_step2, T_max=num_epochs_step2)
+    # exp_lr_scheduler_step2 = lr_scheduler.CosineAnnealingLR(optimizer_step2, T_max=num_epochs_step2)
 
     print()
     print('=== start Step2 training ... ===')

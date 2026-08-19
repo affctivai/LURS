@@ -54,8 +54,8 @@ if [ -z "$pretrain_save_name" ]; then
 fi
 
 if [ "$model_name" != "wo_pretrained" ]; then
-    pretrained_module="$pretrain_save_name"
-    save_name=con_"$pretrain_save_name"_"$model_name"
+    pretrained_module=con_"$pretrain_save_name"
+    save_name="$pretrained_module"_"$model_name"
     python3 pretrain.py --model_name "$pretrain_name" \
         --task_name task1_task2_taskNRv2 \
         --num_epoch 100 \

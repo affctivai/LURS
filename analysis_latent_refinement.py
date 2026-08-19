@@ -34,6 +34,7 @@ import json
 from tqdm import tqdm
 
 import torch
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from transformers import BartTokenizer, BartForConditionalGeneration
 
@@ -67,25 +68,51 @@ def refine_latent(delta_model, z0):
     return z_star
 
 
+def next_token_kl(logits_p, logits_q, valid_mask):
+    """KL( pψ(·|y<t,M) ∥ pψ(·|y<t,M') ) per sample, averaged over valid target
+    positions t. logits_p/logits_q: (B,T,V) teacher-forced next-token logits from
+    pretrained_LM for memories M/M' on the *same* target sequence y. valid_mask:
+    (B,T), 1 where the target token isn't padding."""
+    logp = F.log_softmax(logits_p, dim=-1)
+    logq = F.log_softmax(logits_q, dim=-1)
+    kl = (logp.exp() * (logp - logq)).sum(dim=-1)  # (B, T)
+    return (kl * valid_mask).sum(dim=1) / valid_mask.sum(dim=1).clamp(min=1)
+
+
 @torch.no_grad()
-def collect_latents(model, dataloader, device, max_batches=None):
+def collect_latents(model, dataloader, device, tokenizer, max_batches=None):
     """For each test sample, gather:
       - Z0, Z*                      : latent before/after refinement
       - ||Z0 - Z0'||_F, ||Z*-Z*'||_F: perturbation sensitivity before/after refinement,
                                       where the perturbed pair is a fresh posterior draw
                                       (Z0' ~ q_phi(Z|x), same x).
+      - ||M0-M0'||_F, ||M*-M*'||_F  : same perturbation but on M = fc1(Z), the memory
+                                      actually fed to pretrained_LM as inputs_embeds.
+      - KL0, KL*                    : KL( pψ(·|y<t,M) ∥ pψ(·|y<t,M') ), teacher-forced
+                                      on the real target y, before/after refinement.
+                                      Empirically checks KL(pψ(·|y<t,M)∥pψ(·|y<t,M'))
+                                      <= C·||M-M'||_F.
       - target_key                  : hashable target_ids sequence, used to group samples
                                       that share the same target sentence.
     """
     z0_all, zstar_all = [], []
     delta0_all, deltastar_all = [], []
+    deltam0_all, deltamstar_all = [], []
+    kl0_all, klstar_all = [], []
     target_keys = []
+
+    pad_id = tokenizer.pad_token_id
 
     for i, batch in tqdm(enumerate(dataloader)):
         if max_batches is not None and i >= max_batches:
             break
-        input_embeddings, target_ids_batch = batch[0], batch[4]
+        input_embeddings, input_masks_batch, target_ids_batch = batch[0], batch[2], batch[4]
         x = input_embeddings.to(device).float()
+        input_masks_batch = input_masks_batch.to(device)
+        target_ids_batch = target_ids_batch.to(device)
+        valid_mask = (target_ids_batch != pad_id).float()
+        labels = target_ids_batch.clone()
+        labels[labels == pad_id] = -100  # padding ids ignored, mirrors evaluate()
 
         z0, _ = model.layer.encode(x)
         zstar = refine_latent(model, z0)
@@ -94,11 +121,29 @@ def collect_latents(model, dataloader, device, max_batches=None):
         z0_pert, _ = model.layer.encode(x)          # 같은 입력, posterior.sample()이 새 ε 사용
         zstar_pert = refine_latent(model, z0_pert)
 
+        m0, m0_pert = model.fc1(z0), model.fc1(z0_pert)
+        mstar, mstar_pert = model.fc1(zstar), model.fc1(zstar_pert)
+
+        logits0 = model.layer.pretrained_LM(inputs_embeds=m0, attention_mask=input_masks_batch,
+                                             labels=labels, return_dict=True).logits
+        logits0_pert = model.layer.pretrained_LM(inputs_embeds=m0_pert, attention_mask=input_masks_batch,
+                                                  labels=labels, return_dict=True).logits
+        logitsstar = model.layer.pretrained_LM(inputs_embeds=mstar, attention_mask=input_masks_batch,
+                                                labels=labels, return_dict=True).logits
+        logitsstar_pert = model.layer.pretrained_LM(inputs_embeds=mstar_pert, attention_mask=input_masks_batch,
+                                                     labels=labels, return_dict=True).logits
+
         z0_all.append(z0.reshape(z0.shape[0], -1).cpu())
         zstar_all.append(zstar.reshape(zstar.shape[0], -1).cpu())
 
         delta0_all.append((z0 - z0_pert).reshape(z0.shape[0], -1).norm(dim=1).cpu())
         deltastar_all.append((zstar - zstar_pert).reshape(zstar.shape[0], -1).norm(dim=1).cpu())
+
+        deltam0_all.append((m0 - m0_pert).reshape(m0.shape[0], -1).norm(dim=1).cpu())
+        deltamstar_all.append((mstar - mstar_pert).reshape(mstar.shape[0], -1).norm(dim=1).cpu())
+
+        kl0_all.append(next_token_kl(logits0, logits0_pert, valid_mask).cpu())
+        klstar_all.append(next_token_kl(logitsstar, logitsstar_pert, valid_mask).cpu())
 
         target_keys.extend(tuple(t.tolist()) for t in target_ids_batch)
 
@@ -107,6 +152,10 @@ def collect_latents(model, dataloader, device, max_batches=None):
         torch.cat(zstar_all, dim=0),
         torch.cat(delta0_all, dim=0),
         torch.cat(deltastar_all, dim=0),
+        torch.cat(deltam0_all, dim=0),
+        torch.cat(deltamstar_all, dim=0),
+        torch.cat(kl0_all, dim=0),
+        torch.cat(klstar_all, dim=0),
         target_keys,
     )
 
@@ -124,6 +173,18 @@ def _grouped(stat_fn, latents, groups, min_group_size=2):
     """Apply `stat_fn` within each same-target group, then average the resulting
     stats across groups (equal weight per sentence, regardless of group size)."""
     per_group = [stat_fn(latents[idx]) for idx in groups.values() if len(idx) >= min_group_size]
+    if not per_group:
+        return None
+    averaged = {key: sum(g[key] for g in per_group) / len(per_group) for key in per_group[0]}
+    averaged["num_groups"] = len(per_group)
+    return averaged
+
+
+def _grouped_paired(stat_fn, a, b, groups, min_group_size=2):
+    """Like _grouped but for stat_fn(a[idx], b[idx]) taking two aligned tensors
+    (e.g. per-sample KL and per-sample ||M-M'||_F)."""
+    per_group = [stat_fn(a[idx], b[idx]) for idx in groups.values() if len(idx) >= min_group_size]
+    per_group = [g for g in per_group if g is not None]
     if not per_group:
         return None
     averaged = {key: sum(g[key] for g in per_group) / len(per_group) for key in per_group[0]}
@@ -163,6 +224,25 @@ def perturbation_stats(deltas):
         "mean": deltas.mean().item(),
         "std": deltas.std().item(),
         "max": deltas.max().item(),
+    }
+
+
+def kl_lipschitz_stats(kls, deltas, eps=1e-8):
+    """Empirical check of KL( pψ(·|y<t,M) ∥ pψ(·|y<t,M') ) <= C·||M-M'||_F.
+    Per-sample ratio KL/||M-M'||_F: its sup over samples is the smallest C for
+    which the bound holds on this data (C_hat_max); mean/median describe the
+    typical slope."""
+    valid = deltas > eps
+    if valid.sum() == 0:
+        return None
+    ratio = kls[valid] / deltas[valid]
+    return {
+        "C_hat_max": ratio.max().item(),
+        "C_hat_mean": ratio.mean().item(),
+        "C_hat_median": ratio.median().item(),
+        "kl_mean": kls.mean().item(),
+        "kl_max": kls.max().item(),
+        "num_valid_pairs": int(valid.sum().item()),
     }
 
 
@@ -252,7 +332,8 @@ if __name__ == '__main__':
     model.to(device)
     model.eval()
 
-    z0, zstar, delta0, deltastar, target_keys = collect_latents(model, test_dataloader, device)
+    z0, zstar, delta0, deltastar, deltam0, deltamstar, kl0, klstar, target_keys = collect_latents(
+        model, test_dataloader, device, tokenizer)
     groups = group_by_target(target_keys)
     group_sizes = [len(idx) for idx in groups.values()]
     usable_groups = sum(1 for n in group_sizes if n >= MIN_GROUP_SIZE)
@@ -276,6 +357,11 @@ if __name__ == '__main__':
         "memory_perturbation": {
             "before_refinement": _grouped(perturbation_stats, delta0, groups, MIN_GROUP_SIZE),
             "after_refinement": _grouped(perturbation_stats, deltastar, groups, MIN_GROUP_SIZE),
+        },
+        "kl_lipschitz": {
+            # KL( pψ(·|y<t,M) ∥ pψ(·|y<t,M') ) <= C ||M-M'||_F, M = fc1(Z)
+            "before_refinement": _grouped_paired(kl_lipschitz_stats, kl0, deltam0, groups, MIN_GROUP_SIZE),
+            "after_refinement": _grouped_paired(kl_lipschitz_stats, klstar, deltamstar, groups, MIN_GROUP_SIZE),
         },
     }
     if results["memory_perturbation"]["before_refinement"] and results["memory_perturbation"]["before_refinement"]["mean"]:
