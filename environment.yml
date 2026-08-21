@@ -27,3 +27,5 @@ dependencies:
     - omegaconf
     - bert-score
     - tensorboard
+    - scikit-learn
+    - mne
