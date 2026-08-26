@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
 echo "Usage: $0 <pretrained_model_name> <model_name> <cuda_id> [subject]"
-echo "  Example: $0 pretrain_base DELTA 0 unique_sent"
+echo "  Example: $0 pretrain_base LURS 0 unique_sent"
 exit 1
 }
 
@@ -18,7 +18,7 @@ model_name=$2
 cuda=cuda:"$3"
 
 
-# ['DELTA', 'wo_diffusion', 'DConv', 'EEGNet', 'wo_pretrained','main_diffusion', 'full_diffusion']
+# ['LURS', 'wo_diffusion', 'DConv', 'EEGNet', 'wo_pretrained','main_diffusion', 'full_diffusion']
 # [pretrain, DConv_pretrain, EEGNet_pretrain, wo_diffusion_pretrain]
 # subject ['ZAB', 'ZDM', 'ZGW', 'ZJM', 'ZJN', 'ZJS', 'ZKB', 'ZKH', 'ZKW', 'ZMG', 'ZPH']
 
@@ -62,7 +62,7 @@ for subject in "${subjects[@]}"; do
         --cuda "$cuda" \
         -n "$noise" \
         -ts "$time_step" \
-        -s ./save_model/checkpoints/DELTA    
+        -s ./save_model/checkpoints/LURS    
 
     # 활성화 옵션 메모:
     # -con \

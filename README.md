@@ -72,7 +72,7 @@ Training is two-stage: (1) pretrain a stochastic EEG autoencoder, (2) train the 
 ### 1. Autoencoder pretraining (standalone)
 ```bash
 python3 pretrain.py \
-    --model_name DELTA \
+    --model_name LURS \
     --task_name task1_task2_taskNRv2 \
     --num_epoch 100 \
     -lr 0.00002 \
@@ -90,34 +90,33 @@ Outputs a checkpoint under `save_model/checkpoints/autoencoder/best/` and a matc
 ### 2. Full model training (two-step)
 ```bash
 python3 train.py \
-    --model_name DELTA \
+    --model_name LURS \
     --config_path save_model/config/<pretrain_save_name>.json \
     --num_epoch_step1 100 --num_epoch_step2 50 \
     -lr1 0.00002 -lr2 0.00002 \
     -b 32 \
     --cuda cuda:0 \
-    -s ./save_model/checkpoints/DELTA \
+    -s ./save_model/checkpoints/LURS \
     --save_name my_run
 ```
-`--model_name` selects the encoder/decoder variant: `DELTA`, `wo_diffusion`, `DConv`, `EEGNet`, `MLP`, `wo_pretrained`, `main_diffusion`, `full_diffusion`.
-Optional LoRA on the denoising module: `--apply_lora_to_denoising --lora_r 8 --lora_alpha 16 --lora_dropout 0.05`.
+`--model_name` selects the encoder/decoder variant: `LURS`, `wo_diffusion`, `DConv`, `EEGNet`, `MLP`, `wo_pretrained`, `main_diffusion`, `full_diffusion`.
 
 ### Convenience scripts (pretrain + train in one call)
 ```bash
-./script/train_decoding.sh pretrain DELTA 0 [-s subject] [-p pretrain_save_name] [-l]
-./script/train_contrastive.sh pretrain DELTA 0    # adds -con to pretrain
-./script/train_kl.sh pretrain DELTA 0             # adds -kl to pretrain
+./script/train_decoding.sh pretrain LURS 0 [-s subject] [-p pretrain_save_name]
+./script/train_contrastive.sh pretrain LURS 0    # adds -con to pretrain
+./script/train_kl.sh pretrain LURS 0             # adds -kl to pretrain
 ./script/train_EEGNet.sh 0                        # EEGNet baseline
 ./script/train_DConvNet.sh 0                      # DeepConvNet baseline
 ```
-`-l` toggles LoRA on the denoising module (rank/alpha/dropout edited inside the script). `-s` sets the subject split, `-p` overrides the auto-generated pretrain checkpoint name.
+`-s` sets the subject split, `-p` overrides the auto-generated pretrain checkpoint name.
 
 ---
 
 ## Evaluation
 ```bash
 python3 evaluation.py \
-    --checkpoint_path save_model/checkpoints/DELTA/best/<model_name>.pt \
+    --checkpoint_path save_model/checkpoints/LURS/best/<model_name>.pt \
     --config_path save_model/config/<model_name>.json \
     -setting unique_sent \
     -cuda cuda:0 \

@@ -156,7 +156,7 @@ if __name__ == '__main__':
     lr = args['learning_rate']
     
     batch_size = args['batch_size']
-    model_name = args['model_name'] # DELTA, w/o_diffusion, DConv, EEGNet ...
+    model_name = args['model_name'] # LURS, w/o_diffusion, DConv, EEGNet ...
     models = ['pretrain', 'wo_diffusion_pretrain', 'DConv_pretrain', 'EEGNet_pretrain', 'MLP_pretrain']
     if model_name not in models:
         raise ValueError(f'model_name should be chosen from {models}')

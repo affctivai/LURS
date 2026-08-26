@@ -18,7 +18,7 @@ model_name=DConv
 cuda=cuda:"$1"
 
 
-# ['DELTA', 'wo_diffusion', 'DConv', 'EEGNet', 'wo_pretrained','main_diffusion', 'full_diffusion']
+# ['LURS', 'wo_diffusion', 'DConv', 'EEGNet', 'wo_pretrained','main_diffusion', 'full_diffusion']
 # [pretrain, DConv_pretrain, EEGNet_pretrain, wo_diffusion_pretrain]
 # subject ['ZAB', 'ZDM', 'ZGW', 'ZJM', 'ZJN', 'ZJS', 'ZKB', 'ZKH', 'ZKW', 'ZMG', 'ZPH']
 
@@ -66,7 +66,7 @@ python3 train.py --model_name "$model_name" \
     -b $batch \
     --cuda "$cuda" \
     --save_name "$save_name" \
-    -s ./save_model/checkpoints/DELTA    
+    -s ./save_model/checkpoints/LURS    
 
 # 활성화 옵션 메모:
 # -con \

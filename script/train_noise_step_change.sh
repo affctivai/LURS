@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
   echo "Usage: $0 <pretrained_model_name> <model_name> <cuda_id> [subject]"
-  echo "  Example: $0 pretrain DELTA 0 unique_sent"
+  echo "  Example: $0 pretrain LURS 0 unique_sent"
   echo "  time_step=250"
   exit 1
 }
@@ -53,4 +53,4 @@ python3 train.py --model_name "$model_name" \
     -lr2 0.00002 \
     -b $batch \
     --cuda "$cuda" \
-    -s ./save_model/checkpoints/DELTA
+    -s ./save_model/checkpoints/LURS

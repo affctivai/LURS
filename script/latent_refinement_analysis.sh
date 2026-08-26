@@ -4,7 +4,7 @@ set -euo pipefail
 
 usage() {
   echo "Usage: $0 <model_name> <cuda_id> [subject]"
-  echo "  Example: $0 DELTA 0 unique_sent"
+  echo "  Example: $0 LURS 0 unique_sent"
   exit 1
 }
 
@@ -23,7 +23,7 @@ else
 fi
 
 python3 analysis_latent_refinement.py \
-    --checkpoint_path save_model/checkpoints/DELTA/best/"$model_name".pt \
+    --checkpoint_path save_model/checkpoints/LURS/best/"$model_name".pt \
     --config_path save_model/config/"$model_name".json \
     -setting "$subject" \
     -cuda cuda:"$cuda"

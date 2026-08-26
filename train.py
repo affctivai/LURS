@@ -175,7 +175,7 @@ if __name__ == '__main__':
     batch_size = args['batch_size']
     model_name = args['model_name']
 
-    models = ['DELTA', 'wo_diffusion', 'DConv', 'EEGNet', 'MLP', 'wo_pretrained','main_diffusion', 'full_diffusion']
+    models = ['LURS', 'wo_diffusion', 'DConv', 'EEGNet', 'MLP', 'wo_pretrained','main_diffusion', 'full_diffusion']
     if model_name not in models:
         raise ValueError(f'model_name should be chosen from {models}')
 
@@ -337,11 +337,11 @@ if __name__ == '__main__':
     ).to(device)
     
 
-    # if model_name == 'wo_diffusion' or model_name == 'DELTA':
+    # if model_name == 'wo_diffusion' or model_name == 'LURS':
     #     is_diffusion = False
     # else :
     #     is_diffusion = True
-    # if model_name == 'main_diffusion' or model_name == 'full_diffusion' or model_name == 'DELTA':
+    # if model_name == 'main_diffusion' or model_name == 'full_diffusion' or model_name == 'LURS':
     if model_name == 'main_diffusion' or model_name == 'full_diffusion':
         is_diffusion = True
     else:
@@ -364,7 +364,7 @@ if __name__ == '__main__':
         pt_module.load_state_dict(state_dict)
     
 
-    #     models = ['DELTA', 'wo_diffusion', 'DConv', 'EEGNet', 'wo_pretrained','main_diffusion', 'full_diffusion']
+    #     models = ['LURS', 'wo_diffusion', 'DConv', 'EEGNet', 'wo_pretrained','main_diffusion', 'full_diffusion']
 
     if pretrained_model_name != 'pretrain' and model_name == 'full_diffusion':
         Exception('full_diffusion should use pretrainedmodule as pretrained_model_name')

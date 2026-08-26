@@ -4,7 +4,7 @@ import os
 import numpy as np
 from dataclasses import dataclass
 from typing import Callable, Dict
-from model.decoding_model import DELTA
+from model.decoding_model import LURS
 from model.pretrain_model import pretrainedmodule
 from transformers import PreTrainedModel
 from model.wrappers import Wrapper_pretrain
@@ -31,7 +31,7 @@ def get_linear_annealing_weight(step, start_step, end_step):
 
 @dataclass
 class BuildOptions:
-    model_name: str = 'DELTA'  # 'DELTA', 'w/o_diffusion', 'DConv', 'EEGNet', 'MLP', 'w/o_pretrained'
+    model_name: str = 'LURS'  # 'LURS', 'w/o_diffusion', 'DConv', 'EEGNet', 'MLP', 'w/o_pretrained'
     is_con: bool = False
     is_geo: bool = False
     is_kl: bool  = False
@@ -54,7 +54,7 @@ class BuildOptions:
 
 
 def build_delta(apts: BuildOptions):
-    return DELTA(*apts()).to(apts.device)
+    return LURS(*apts()).to(apts.device)
 
 
 
@@ -63,7 +63,7 @@ def build_pretrain_module(apts: BuildOptions):
 
 
 MODEL_BUILDERS: Dict[str, Callable[[], object]] = {
-    "DELTA":           build_delta,
+    "LURS":           build_delta,
     "full_diffusion": build_delta,
     "main_diffusion": build_delta,
     "wo_diffusion":   build_delta,

@@ -5,19 +5,19 @@ import torch
 # from module.ldm.diffusion_module import register_schedule
 # from module.ldm.util import q_sample, extract_into_tensor
 from model.util import *
-from .wrappers import Wrapper_DELTA, Wrapper_pretrain
+from .wrappers import Wrapper_LURS, Wrapper_pretrain
 from module.ldm.diffusion_module import register_schedule
 from module.ldm.util import q_sample, extract_into_tensor, noise_like, default
 import math
 from tqdm import tqdm
 
-__all__ = ["DELTA"]
+__all__ = ["LURS"]
 
-class DELTA(Wrapper_DELTA):
+class LURS(Wrapper_LURS):
     def __init__(self, pretrained: Wrapper_pretrain, is_diffusion: bool, is_compare_model: bool,
                  noise_scheduler:str,
                  time_step:int, device: torch.device):
-        super(DELTA, self).__init__()
+        super(LURS, self).__init__()
         self.layer=pretrained
 
         # self.is_diffusion = is_diffusion[0]

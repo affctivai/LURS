@@ -25,7 +25,7 @@ class Wrapper_pretrain(nn.Module, ABC):
     def forward(self, x, context):
         pass
 
-class Wrapper_DELTA(nn.Module, ABC):
+class Wrapper_LURS(nn.Module, ABC):
     @abstractmethod
     def __init__(self):
         super().__init__()
