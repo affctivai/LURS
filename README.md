@@ -130,16 +130,6 @@ Or:
 ```
 Reports BLEU-1..4, ROUGE, and (via `metrics.py`) BERTScore/BLEURT/NLI-entailment/entity-preservation. Results are written to `results/` and `score_results/`; `get_results.py` aggregates the `.txt` logs into summary tables.
 
----
-
-## Analysis Scripts
-Both take the same `--checkpoint_path`/`--config_path` args as `evaluation.py`:
-
-```bash
-./script/eeg_contribution_analysis.sh <model_name> <cuda_id> [subject_setting]
-```
-Per-token `delta_i = logP(y_i | y_<i, EEG) - logP(y_i | y_<i, NoEEG)`, isolating what the EEG input contributes to each predicted token (EEG replaced with gaussian noise for the counterfactual pass).
-
 ```bash
 ./script/latent_refinement_analysis.sh <model_name> <cuda_id> [subject_setting]
 ```
