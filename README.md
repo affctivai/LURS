@@ -136,10 +136,10 @@ Reports BLEU-1..4, ROUGE, and (via `metrics.py`) BERTScore/BLEURT/NLI-entailment
 
 Please cite our paper if you use our code in your own work:
 ```
-@article{park2026lurs,
+@inproceedings{park2026lurs,
   title={Latent-Level Uncertainty Resolution for Stable Sequence Generation across Distribution Shifts: Open-Vocabulary EEG-to-Text Decoding},
   author={Park, Sejin and Lee, Jedong and So, Yunhui and Kim, Byung Hyung},
-  journal={Findings of the Association for Computational Linguistics: Empirical Methods in Natural Language Processing (Findings of EMNLP)},
+  booktitle={Findings of the Association for Computational Linguistics: Empirical Methods in Natural Language Processing (Findings of EMNLP)},
   year={2026}
 }
 ```
