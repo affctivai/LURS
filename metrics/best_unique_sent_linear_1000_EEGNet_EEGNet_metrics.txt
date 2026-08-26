@@ -1,5 +1,0 @@
-File: results/best_unique_sent_linear_1000_EEGNet_EEGNet.txt
-------------------------------------------------------------------------------------------
-file results/best_unique_sent_linear_1000_EEGNet_EEGNet.txt Mean BLEU (no tf): [0.9829431180655337, 0.9574980691042425, 0.9318730504694199, 0.9063052098506655]
-file results/best_unique_sent_linear_1000_EEGNet_EEGNet.txt Mean BLEU (tf): [0.9997759399463466, 0.9993714931976062, 0.9990642098058933, 0.9988043613356852]
-

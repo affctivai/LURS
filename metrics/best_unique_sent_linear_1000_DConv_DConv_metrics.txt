@@ -1,5 +1,0 @@
-File: results/best_unique_sent_linear_1000_DConv_DConv.txt
-------------------------------------------------------------------------------------------
-file results/best_unique_sent_linear_1000_DConv_DConv.txt Mean BLEU (no tf): [0.983504087489498, 0.9589442581267713, 0.9333317708822296, 0.9082882267177345]
-file results/best_unique_sent_linear_1000_DConv_DConv.txt Mean BLEU (tf): [0.9995776571424341, 0.9989170353423328, 0.9978165997749379, 0.9968561772381007]
-
