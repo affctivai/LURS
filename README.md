@@ -100,7 +100,6 @@ python3 train.py \
     --save_name my_run
 ```
 `--model_name` selects the encoder/decoder variant: `DELTA`, `wo_diffusion`, `DConv`, `EEGNet`, `MLP`, `wo_pretrained`, `main_diffusion`, `full_diffusion`.
-Optional LoRA on the denoising module: `--apply_lora_to_denoising --lora_r 8 --lora_alpha 16 --lora_dropout 0.05`.
 
 ### Convenience scripts (pretrain + train in one call)
 ```bash
