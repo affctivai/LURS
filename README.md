@@ -1,4 +1,7 @@
 # EEG-To-Text (LURS)
+This repository provides the official implementation of LURS, introduced in our paper:
+
+Sejin Park, Jedong Lee, Yunhui So, Byung Hyung Kim, “Latent-Level Uncertainty Resolution for Stable Sequence Generation across Distribution Shifts: Open-Vocabulary EEG-to-Text Decoding,” Findings of the Association for Computational Linguistics: Empirical Methods in Natural Language Processing (Findings of EMNLP), 2026. [PDF][Link]
 
 ## Overview
 This project decodes natural-language sentences from EEG signals recorded during reading (ZuCo dataset). It builds on **NeuSpeech/EEG-To-Text** and the latent-diffusion framework from **CompVis/latent-diffusion**, adding a stochastic autoencoder + diffusion denoising pipeline with an optional **LURS** latent-refinement step (single-step deterministic refinement of the sampled latent).
@@ -128,3 +131,19 @@ Or:
 ./script/cross-subject_eval.sh <pretrained_model_name> <model_name> <cuda_id>
 ```
 Reports BLEU-1..4, ROUGE, and (via `metrics.py`) BERTScore/BLEURT/NLI-entailment/entity-preservation. Results are written to `results/` and `score_results/`
+
+# Cite
+
+Please cite our paper if you use our code in your own work:
+```
+@article{park2026lurs,
+  title={Latent-Level Uncertainty Resolution for Stable Sequence Generation across Distribution Shifts: Open-Vocabulary EEG-to-Text Decoding},
+  author={Park, Sejin and Lee, Jedong and So, Yunhui and Kim, Byung Hyung},
+  journal={Findings of the Association for Computational Linguistics: Empirical Methods in Natural Language Processing (Findings of EMNLP)},
+  year={2026}
+}
+```
+## License
+
+This project is licensed under the Apache License 2.0.
+See the LICENSE file for details.
