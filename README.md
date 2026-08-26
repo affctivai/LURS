@@ -1,7 +1,7 @@
 # EEG-To-Text (LURS)
 
 ## Overview
-This project decodes natural-language sentences from EEG signals recorded during reading (ZuCo dataset). It builds on **NeuSpeech/EEG-To-Text** and the latent-diffusion framework from **CompVis/latent-diffusion**, adding a stochastic autoencoder + diffusion denoising pipeline with an optional **LURS** latent-refinement step (single-step deterministic refinement of the sampled latent, see `3618_Latent_Level_Uncertainty_.pdf`).
+This project decodes natural-language sentences from EEG signals recorded during reading (ZuCo dataset). It builds on **NeuSpeech/EEG-To-Text** and the latent-diffusion framework from **CompVis/latent-diffusion**, adding a stochastic autoencoder + diffusion denoising pipeline with an optional **LURS** latent-refinement step (single-step deterministic refinement of the sampled latent).
 
 Pipeline: `EEG -> stochastic encoder (pretrain) -> diffusion denoising -> (optional LURS refinement) -> fc1 -> BART decoder -> text`
 
@@ -127,19 +127,4 @@ Or:
 ./script/eval_decoding_1.sh <model_name> <cuda_id> [subject_setting]
 ./script/cross-subject_eval.sh <pretrained_model_name> <model_name> <cuda_id>
 ```
-Reports BLEU-1..4, ROUGE, and (via `metrics.py`) BERTScore/BLEURT/NLI-entailment/entity-preservation. Results are written to `results/` and `score_results/`; `get_results.py` aggregates the `.txt` logs into summary tables.
-
----
-
-## Analysis Scripts
-Both take the same `--checkpoint_path`/`--config_path` args as `evaluation.py`:
-
-```bash
-./script/eeg_contribution_analysis.sh <model_name> <cuda_id> [subject_setting]
-```
-Per-token `delta_i = logP(y_i | y_<i, EEG) - logP(y_i | y_<i, NoEEG)`, isolating what the EEG input contributes to each predicted token (EEG replaced with gaussian noise for the counterfactual pass).
-
-```bash
-./script/latent_refinement_analysis.sh <model_name> <cuda_id> [subject_setting]
-```
-Before/after comparison of the LURS latent refinement step (Z0 vs Z*): memory-perturbation sensitivity, pairwise distance, and per-dimension variance among same-target-sentence latents — empirically checks the contraction property behind the refinement.
+Reports BLEU-1..4, ROUGE, and (via `metrics.py`) BERTScore/BLEURT/NLI-entailment/entity-preservation. Results are written to `results/` and `score_results/`
