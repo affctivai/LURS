@@ -3,7 +3,7 @@
 ## Overview
 This project decodes natural-language sentences from EEG signals recorded during reading (ZuCo dataset). It builds on **NeuSpeech/EEG-To-Text** and the latent-diffusion framework from **CompVis/latent-diffusion**, adding a stochastic autoencoder + diffusion denoising pipeline with an optional **LURS** latent-refinement step (single-step deterministic refinement of the sampled latent).
 
-Pipeline: `EEG -> stochastic encoder (pretrain) -> diffusion denoising -> (optional LURS refinement) -> fc1 -> BART decoder -> text`
+Pipeline: `EEG -> stochastic encoder (pretrain) -> diffusion denoising -> optional LURS refinement -> fc1 -> BART decoder -> text`
 
 ---
 
@@ -14,8 +14,6 @@ Pipeline: `EEG -> stochastic encoder (pretrain) -> diffusion denoising -> (optio
 | PyTorch | 1.9.0 |
 | CUDA toolkit | 11.1 |
 | transformers | 4.6.1 |
-
-Other deps: numpy, scipy, h5py, tqdm, matplotlib, nltk, einops, omegaconf, evaluate, sacrebleu, rouge, jiwer, bert-score, tensorboard.
 
 ```bash
 conda env create -f environment.yml
@@ -30,7 +28,7 @@ conda activate EEGToText
 ├── data/                        # ZuCo -> pickle preprocessing + PyTorch Datasets
 │   ├── prepare_zuco_dataset/    # .mat -> .pickle conversion scripts
 │   ├── data.py                  # EEG (band-power) dataset
-│   └── data_for_rawEEG*.py       # raw-EEG dataset variants
+│   └── data_raw.py              # raw-EEG dataset variants
 ├── model/
 │   ├── pretrain_model.py        # stochastic autoencoder (+ EEGNet/DConv/MLP pretrain variants)
 │   ├── decoding_model.py         # full model: pretrained encoder + diffusion + BART decoder
@@ -45,13 +43,9 @@ conda activate EEGToText
 ├── train.py                     # Stage 2: full model training (two-step)
 ├── evaluation.py                 # BLEU/ROUGE/BERTScore/... evaluation on a checkpoint
 ├── metrics.py                    # BERTScore, BLEURT, NLI entailment, entity-preservation metrics
-├── analysis_eeg_contribution.py  # per-token delta = logP(y|EEG) - logP(y|NoEEG)
-├── analysis_latent_refinement.py # LURS before/after refinement analysis (Sec. 3.3/4.2, Appendix B)
-├── get_results.py                # parse result .txt logs into summary tables
 ├── script/                       # shell wrappers for the commands below
 ├── save_model/                   # checkpoints + configs (auto-generated, gitignored)
-├── results/ , score_results/      # evaluation outputs
-└── logs/                          # training/eval logs (gitignored)
+└── results/ , score_results/      # evaluation outputs
 ```
 
 ---
@@ -63,6 +57,14 @@ Convert ZuCo `.mat` recordings to pickled tensors:
 ./script/prepare_dataset.sh rawEEG   # raw EEG timeseries
 ```
 
+Convert those pickles to struct-npy (faster load, no re-tokenize on max_len/eeg_type changes):
+```bash
+cd data/prepare_zuco_dataset
+python3 convert_preprocessed_to_npy.py --task task1-SR   # or --all
+python3 convert_raw_to_npy.py --task task1-SR            # or --all
+```
+Tasks: `task1-SR`, `task2-NR`, `task3-TSR`, `task2-NR-2.0` (raw script excludes `task3-TSR`). Override source/output dirs with `--pickle_root` / `--out_root`.
+
 ---
 
 ## Training
@@ -72,7 +74,7 @@ Training is two-stage: (1) pretrain a stochastic EEG autoencoder, (2) train the 
 ### 1. Autoencoder pretraining (standalone)
 ```bash
 python3 pretrain.py \
-    --model_name LURS \
+    --model_name pretrain \
     --task_name task1_task2_taskNRv2 \
     --num_epoch 100 \
     -lr 0.00002 \

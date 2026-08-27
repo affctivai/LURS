@@ -5,15 +5,53 @@ import data_loading_helpers_modified as dh
 from glob import glob
 from tqdm import tqdm
 import pickle
+import argparse
+
+def clip_or_pad_eeg(eeg_data, target_length=5600):
+    """
+    eeg_data: NumPy 배열, shape = [num_channels, time]
+    target_length: 원하는 최대/최소 시간 길이 (기본 5600)
+    
+    반환: shape = [num_channels, target_length]
+    """
+    # EEG 데이터의 현재 길이(시간 축)
+    current_length = eeg_data.shape[1]
+
+    if current_length > target_length:
+        # 지정된 길이를 초과할 경우 앞부분부터 잘라냄
+        eeg_data = eeg_data[:, :target_length]
+    elif current_length < target_length:
+        # 지정된 길이에 미치지 못하면 뒤쪽에 0으로 패딩
+        pad_length = target_length - current_length
+        eeg_data = np.pad(
+            eeg_data,
+            pad_width=((0, 0), (0, pad_length)),
+            mode='constant',
+            constant_values=0
+        )
+
+    return eeg_data, current_length
 
 home_directory = os.path.expanduser("~")
 
-rootdir = os.path.join(home_directory,"datasets/ZuCo/task2-NR-2.0/Matlab_files/")
+# task_name -> mat 파일명 끝에 붙는 suffix (예: resultsYAC_NR.mat, resultsYAC_TSR.mat)
+TASK_SUFFIX = {
+    "task1-NR": "NR",
+    "task2-TSR": "TSR",
+}
 
-task = "NR"
+parser = argparse.ArgumentParser(description='Specify task name for converting ZuCo v2.0 (mat73/h5py) Mat file to Pickle')
+parser.add_argument('-t', '--task_name', help=f'name of the task in /dataset/ZuCo, choose from {list(TASK_SUFFIX.keys())}', required=True, choices=list(TASK_SUFFIX.keys()))
+args = vars(parser.parse_args())
+
+task_name = args['task_name']
+task = TASK_SUFFIX[task_name]
+
+# rootdir = os.path.join(home_directory,f"datasets/ZuCo/{task_name}/Matlab_files/")
+rootdir = f"/mnt/data/original/ZuCo/ZuCov2/{task_name}/Matlabfiles/"
 
 print('##############################')
-print(f'start processing ZuCo task2-NR-2.0...')
+print(f'start processing ZuCo {task_name}...')
 
 dataset_dict = {}
 
@@ -61,6 +99,11 @@ for file in tqdm(os.listdir(rootdir)):
                 # print('sentence string:', sent_string)
                 
                 sent_obj = {'content':sent_string}
+
+                obj_reference_rawData = sentence_data['rawData'][idx][0]
+                sent_rawEEG = np.array([r for r in f[obj_reference_rawData]])
+
+                sent_obj['rawData'], sent_obj['current_length'] = clip_or_pad_eeg(sent_rawEEG.T)
                 
                 # get sentence level EEG
                 sent_obj['sentence_level_EEG'] = {
@@ -116,8 +159,6 @@ for file in tqdm(os.listdir(rootdir)):
                     dataset_dict[subject].append(sent_obj)
 
 """output"""
-task_name = 'task2-NR-2.0'
-
 if dataset_dict == {}:
     print(f'No mat file found for {task_name}')
     quit()
@@ -136,4 +177,5 @@ with open(os.path.join(output_dir,output_name), 'wb') as handle:
 
 """sanity check"""
 print('subjects:', dataset_dict.keys())
-print('num of sent:', len(dataset_dict['YAC']))
+first_subject = list(dataset_dict.keys())[0]
+print('num of sent:', len(dataset_dict[first_subject]))

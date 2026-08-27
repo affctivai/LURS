@@ -7,9 +7,34 @@ from tqdm import tqdm
 import numpy as np
 import pickle
 import argparse
-home_directory = os.path.expanduser("~")
 
-rootdir = os.path.join(home_directory,"datasets/ZuCo/task2-NR-2.0/Matlab_files/")
+def clip_or_pad_eeg(eeg_data, target_length=5600):
+    """
+    eeg_data: NumPy 배열, shape = [num_channels, time]
+    target_length: 원하는 최대/최소 시간 길이 (기본 5600)
+    
+    반환: shape = [num_channels, target_length]
+    """
+    # EEG 데이터의 현재 길이(시간 축)
+    current_length = eeg_data.shape[1]
+
+    if current_length > target_length:
+        # 지정된 길이를 초과할 경우 앞부분부터 잘라냄
+        eeg_data = eeg_data[:, :target_length]
+    elif current_length < target_length:
+        # 지정된 길이에 미치지 못하면 뒤쪽에 0으로 패딩
+        pad_length = target_length - current_length
+        eeg_data = np.pad(
+            eeg_data,
+            pad_width=((0, 0), (0, pad_length)),
+            mode='constant',
+            constant_values=0
+        )
+
+    return eeg_data, current_length
+
+
+home_directory = os.path.expanduser("~")
 
 parser = argparse.ArgumentParser(description='Specify task name for converting ZuCo v1.0 Mat file to Pickle')
 parser.add_argument('-t', '--task_name', help='name of the task in /dataset/ZuCo, choose from {task1-SR,task2-NR,task3-TSR}', required=True)
@@ -34,7 +59,8 @@ print(f'start processing ZuCo {task_name}...')
 
 if version == 'v1':
     # old version datasets/ZuCo/task1-SR/Matlab_files
-    input_mat_files_dir = os.path.join(home_directory,f"datasets/ZuCo/{task_name}/Matlab_files")
+    # input_mat_files_dir = os.path.join(home_directory,f"datasets/ZuCo/{task_name}/Matlab_files")
+    input_mat_files_dir = f"/mnt/data/original/ZuCo/ZuCov1/{task_name}/Matlabfiles"
 elif version == 'v2':
     # new version, mat73 
     input_mat_files_dir = os.path.join(home_directory,f'datasets/ZuCo/{task_name}/Matlab_files')
@@ -75,7 +101,17 @@ for mat_file in tqdm(mat_files):
 
             if task_name == 'task1-SR':
                 sent_obj['answer_EEG'] = {'answer_mean_t1':sent.answer_mean_t1, 'answer_mean_t2':sent.answer_mean_t2, 'answer_mean_a1':sent.answer_mean_a1, 'answer_mean_a2':sent.answer_mean_a2, 'answer_mean_b1':sent.answer_mean_b1, 'answer_mean_b2':sent.answer_mean_b2, 'answer_mean_g1':sent.answer_mean_g1, 'answer_mean_g2':sent.answer_mean_g2}
-            
+
+
+            if  not isinstance(sent.rawData, float):
+                rawData, current_length = clip_or_pad_eeg(sent.rawData)
+                sent_obj['rawData'] = rawData
+                sent_obj['current_length'] = current_length
+            else:
+                sent_obj['rawData'] = None
+                sent_obj['current_length'] = 0
+
+
             # word level:
             sent_obj['word'] = []
             
@@ -88,7 +124,7 @@ for mat_file in tqdm(mat_files):
                 word_tokens_all.append(word.content)
                 # TODO: add more version of word level eeg: GD, SFD, GPT
                 word_obj['nFixations'] = word.nFixations
-                if word.nFixations > 0:    
+                if np.asarray(word.nFixations).size > 0 and np.asarray(word.nFixations) > 0:
                     word_obj['word_level_EEG'] = {'FFD':{'FFD_t1':word.FFD_t1, 'FFD_t2':word.FFD_t2, 'FFD_a1':word.FFD_a1, 'FFD_a2':word.FFD_a2, 'FFD_b1':word.FFD_b1, 'FFD_b2':word.FFD_b2, 'FFD_g1':word.FFD_g1, 'FFD_g2':word.FFD_g2}}
                     word_obj['word_level_EEG']['TRT'] = {'TRT_t1':word.TRT_t1, 'TRT_t2':word.TRT_t2, 'TRT_a1':word.TRT_a1, 'TRT_a2':word.TRT_a2, 'TRT_b1':word.TRT_b1, 'TRT_b2':word.TRT_b2, 'TRT_g1':word.TRT_g1, 'TRT_g2':word.TRT_g2}
                     word_obj['word_level_EEG']['GD'] = {'GD_t1':word.GD_t1, 'GD_t2':word.GD_t2, 'GD_a1':word.GD_a1, 'GD_a2':word.GD_a2, 'GD_b1':word.GD_b1, 'GD_b2':word.GD_b2, 'GD_g1':word.GD_g1, 'GD_g2':word.GD_g2}
