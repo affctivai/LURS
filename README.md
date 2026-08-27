@@ -110,9 +110,6 @@ python3 train.py \
 ```bash
 ./script/train_decoding.sh pretrain LURS 0 [-s subject] [-p pretrain_save_name]
 ./script/train_contrastive.sh pretrain LURS 0    # adds -con to pretrain
-./script/train_kl.sh pretrain LURS 0             # adds -kl to pretrain
-./script/train_EEGNet.sh 0                        # EEGNet baseline
-./script/train_DConvNet.sh 0                      # DeepConvNet baseline
 ```
 `-s` sets the subject split, `-p` overrides the auto-generated pretrain checkpoint name.
 
@@ -139,7 +136,7 @@ Reports BLEU-1..4, ROUGE, and (via `metrics.py`) BERTScore/BLEURT/NLI-entailment
 Please cite our paper if you use our code in your own work:
 ```
 @inproceedings{park2026lurs,
-  title={Latent-Level Uncertainty Resolution for Stable Sequence Generation across Distribution Shifts: Open-Vocabulary EEG-to-Text Decoding},
+  title={Latent-Level Uncertainty Resolution for Stable EEG-to-Text Decoding under Cross-Subject Variability},
   author={Park, Sejin and Lee, Jedong and So, Yunhui and Kim, Byung Hyung},
   booktitle={Findings of the Association for Computational Linguistics: Empirical Methods in Natural Language Processing (Findings of EMNLP)},
   year={2026}
