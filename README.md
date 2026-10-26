@@ -1,7 +1,7 @@
 # EEG-To-Text (LURS)
 This repository provides the official implementation of LURS, introduced in our paper:
 
-Sejin Park, Jedong Lee, Yunhui So, Byung Hyung Kim, “Latent-Level Uncertainty Resolution for Stable Sequence Generation across Distribution Shifts: Open-Vocabulary EEG-to-Text Decoding,” Findings of the Association for Computational Linguistics: Empirical Methods in Natural Language Processing (Findings of EMNLP), 2026. [PDF][Link]
+Sejin Park, Jedong Lee, Yunhui So, Byung Hyung Kim, “Latent-Level Uncertainty Resolution for Stable Sequence Generation across Distribution Shifts: Open-Vocabulary EEG-to-Text Decoding,” Findings of the Association for Computational Linguistics: Empirical Methods in Natural Language Processing (Findings of EMNLP), 2026. [[PDF]](https://drive.google.com/file/d/1IbtSW7M6_0jnk9M6c7WNoBF60WCb8Crt) [[Link]](https://aclanthology.org/2026.findings-emnlp.1350/)
 
 ## Overview
 This project decodes natural-language sentences from EEG signals recorded during reading (ZuCo dataset). It builds on **NeuSpeech/EEG-To-Text** and the latent-diffusion framework from **CompVis/latent-diffusion**, adding a stochastic autoencoder + diffusion denoising pipeline with an optional **LURS** latent-refinement step (single-step deterministic refinement of the sampled latent).
@@ -139,6 +139,7 @@ Please cite our paper if you use our code in your own work:
   title={Latent-Level Uncertainty Resolution for Stable EEG-to-Text Decoding under Cross-Subject Variability},
   author={Park, Sejin and Lee, Jedong and So, Yunhui and Kim, Byung Hyung},
   booktitle={Findings of the Association for Computational Linguistics: Empirical Methods in Natural Language Processing (Findings of EMNLP)},
+  pages={28666--28679},
   year={2026}
 }
 ```
